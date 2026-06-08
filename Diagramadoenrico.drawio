@@ -1,0 +1,6 @@
+/composer/
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyc
