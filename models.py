@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from sqlalchemy import text
-
+from models import *
 from db_connect import (
     execute_select_query,
     execute_modify_query,
