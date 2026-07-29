@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Traços{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Consulta de Traços</h1>
+
+  <form method="get" action="">
+    <div class="grid">
+      <div class="field">
+        <label for="q">Buscar</label>
+        <input type="text" id="q" name="q" value="{{ request.args.get('q', '') }}" placeholder="Nome ou tipo">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Filtrar</button>
+      <a class="btn btn-secondary" href="{{ url_for('new_mix') }}">Novo traço</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Tipo de concreto</th>
+        <th>Cor</th>
+        <th>fck 28 MPa</th>
+        <th>Slump alvo</th>
+        <th>Cimento (kg/m³)</th>
+        <th>Massa específica</th>
+        <th>Ações</th> <!-- 1. ADICIONADO AQUI -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in mixes %}
+      <tr>
+        <td>{{ m.name }}</td>
+        <td>{{ m.concrete_type }}</td>
+        <td>{{ m.color }}</td>
+        <td>{{ m.fck28 }}</td>
+        <td>{{ m.target_slump }}</td>
+        <td>{{ m.cement_consumption }}</td>
+        <td>{{ m.specific_mass }}</td>
+        <td>
+          <!-- 2. BOTÃO ADICIONADO AQUI -->
+          <a class="btn btn-secondary" href="{{ url_for('print_mix_pdf', mix_id=m.id) }}">
+            Imprimir PDF
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="8" class="muted">Nenhum traço cadastrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

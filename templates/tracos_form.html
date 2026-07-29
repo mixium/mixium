@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Novo traço{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Cadastrar Traço</h1>
+
+  <form method="post">
+    <div class="grid">
+      <div class="field">
+        <label for="mix_name">Nome</label>
+        <input type="text" id="mix_name" name="mix_name" value="{{ form.mix_name|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="concrete_type">Tipo de concreto</label>
+        <input type="text" id="concrete_type" name="concrete_type" value="{{ form.concrete_type|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="color">Cor</label>
+        <input type="text" id="color" name="color" value="{{ form.color|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="fck28">fck 28 em MPa</label>
+        <input type="number" step="any" min="0" id="fck28" name="fck28" value="{{ form.fck28|default('') }}" >
+      </div>
+
+      <div class="field">
+        <label for="target_slump">Slump alvo em cm</label>
+        <input type="number" step="any" min="0" id="target_slump" name="target_slump" value="{{ form.target_slump|default('') }}" >
+      </div>
+
+      <div class="field">
+        <label for="cement_consumption">Consumo de cimento (kg/m³)</label>
+        <input type="number" step="any" min="0" id="cement_consumption" name="cement_consumption" value="{{ form.cement_consumption|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="specific_mass">Massa específica real(kg/m³)</label>
+        <input type="number" step="any" min="0" id="specific_mass" name="specific_mass" value="{{ form.specific_mass|default('') }}" >
+      </div>
+    </div>
+
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--line);">
+
+    <h2>Materiais da mistura</h2>
+    <div class="muted" style="margin-bottom: 12px;">Exibir somente o nome no front; o ID fica interno no backend.</div>
+
+    <div id="materiais-wrapper">
+      {% for item in materiais_mix|default([{}]) %}
+      <div class="grid linha-material" style="margin-bottom: 12px;">
+        <div class="field">
+          <label>Material</label>
+          <select name="materials" required>
+            <option value="">Selecione</option>
+            {% for m in materials %}
+              <option value="{{ m.id }}" {% if item.id|default('') == m.id %}selected{% endif %}>
+                {{ m.commercial_name }} — {{ m.brand }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Quantidade unitária (g/g)</label>
+          <input type="number" step="any" min="0" name="quantities" value="{{ item.quantidade|default('') }}" required>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" type="button" onclick="adicionarLinha()">+ Adicionar material</button>
+      <button class="btn btn-primary" type="submit">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('mixes') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<template id="linha-template">
+  <div class="grid linha-material" style="margin-bottom: 12px;">
+    <div class="field">
+      <label>Material</label>
+      <select name="materials" required>
+        <option value="">Selecione</option>
+        {% for m in materials %}
+          <option value="{{ m.id }}">{{ m.commercial_name }} — {{ m.brand }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Quantidade unitária (g/g)</label>
+      <input type="number" step="any" min="0" name="quantities" required>
+    </div>
+  </div>
+</template>
+
+<script>
+function adicionarLinha() {
+  const wrapper = document.getElementById('materiais-wrapper');
+  const template = document.getElementById('linha-template');
+  wrapper.appendChild(template.content.cloneNode(true));
+}
+</script>
+{% endblock %}

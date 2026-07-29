@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Novo material{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Cadastrar Material</h1>
+
+  <form method="post">
+    <div class="grid">
+      <div class="field">
+        <label for="commercial_name">Nome comercial</label>
+        <input type="text" id="commercial_name" name="commercial_name" value="{{ form.commercial_name|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="brand">Marca comercial</label>
+        <input type="text" id="brand" name="brand" value="{{ form.brand|default('') }}" >
+      </div>
+
+      <div class="field">
+        <label for="specific_mass">Massa específica g/cm³</label>
+        <input type="number" step="any" min="0" id="specific_mass" name="specific_mass" value="{{ form.specific_mass|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="material_type">Tipo</label>
+        <select id="material_type" name="material_type" required>
+          <option value="">Selecione</option>
+          {% for t in material_types %}
+            <option value="{{ t }}" {% if form.material_type|default('') == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('materials') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

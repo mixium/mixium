@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Produções de Concreto{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Consulta de Produções de Concreto</h1>
+
+    <div class="actions">
+        <a class="btn btn-secondary"
+           href="{{ url_for('new_production') }}">
+            Nova produção
+        </a>
+    </div>
+
+</div>
+
+<div class="card">
+
+<table>
+
+    <thead>
+
+        <tr>
+            <th>Data</th>
+            <th>Traço</th>
+            <th>Slump (cm)</th>
+            <th>fc28 (MPa)</th>
+            <th>Massa específica (kg/m³)</th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for production in productions %}
+
+        <tr>
+
+            <td>{{ production.production_date }}</td>
+
+            <td>{{ production.mix_name }}</td>
+
+            <td>{{ production.production_slump }}</td>
+
+            <td>{{ production.fc28 }}</td>
+
+            <td>{{ production.fresh_density }}</td>
+
+        </tr>
+
+    {% else %}
+
+        <tr>
+
+            <td colspan="5">
+                Nenhuma produção cadastrada.
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

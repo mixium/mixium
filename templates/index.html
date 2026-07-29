@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Módulo Digital do Concreto</title>
+
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            background:#f5f5f5;
+            margin:40px;
+        }
+
+        h1{
+            color:#222;
+        }
+
+        h2{
+            margin-top:40px;
+        }
+
+        .container{
+            display:flex;
+            flex-wrap:wrap;
+            gap:20px;
+        }
+
+        .card{
+            width:280px;
+            background:white;
+            border-radius:10px;
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+            padding:20px;
+        }
+
+        .card h3{
+            margin-top:0;
+        }
+
+        .buttons{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            margin-top:15px;
+        }
+
+        a.button{
+            text-decoration:none;
+            background:#1565c0;
+            color:white;
+            padding:10px;
+            border-radius:6px;
+            text-align:center;
+        }
+
+        a.button:hover{
+            background:#0d47a1;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Módulo Digital do Concreto</h1>
+
+<p>
+Sistema para gerenciamento de materiais, traços,
+produções de concreto e ensaios de resistência.
+</p>
+
+<div class="container">
+
+    <div class="card">
+
+        <h3>Materiais</h3>
+
+        <p>
+            Cadastro e consulta de materiais utilizados nos traços.
+        </p>
+
+        <div class="buttons">
+
+            <a class="button"
+               href="{{ url_for('new_material') }}">
+                Cadastrar Material
+            </a>
+
+            <a class="button"
+               href="{{ url_for('materials') }}">
+                Consultar Materiais
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Traços</h3>
+
+        <p>
+            Cadastro dos traços e respectivos materiais.
+        </p>
+
+        <div class="buttons">
+
+            <a class="button"
+               href="{{ url_for('new_mix') }}">
+                Cadastrar Traço
+            </a>
+
+            <a class="button"
+               href="{{ url_for('mixes') }}">
+                Consultar Traços
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Produções</h3>
+
+        <p>
+            Registro das produções de concreto.
+        </p>
+
+        <div class="buttons">
+
+            <a class="button"
+               href="{{ url_for('new_production') }}">
+                Nova Produção
+            </a>
+
+            <a class="button"
+               href="{{ url_for('productions') }}">
+                Consultar Produções
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Corpos de Prova</h3>
+
+        <p>
+            Registro dos ensaios de resistência à compressão.
+        </p>
+
+        <div class="buttons">
+
+            <a class="button"
+               href="{{ url_for('new_strength_sample') }}">
+                Novo Corpo de Prova
+            </a>
+
+            <a class="button"
+               href="{{ url_for('strength_samples') }}">
+                Consultar Corpos de Prova
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Nova produção{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Cadastrar Produção de Concreto</h1>
+
+  <form method="post">
+    <div class="grid">
+      <div class="field">
+        <label for="mix_id">Traço</label>
+        <select id="mix_id" name="mix_id" required>
+          <option value="">Selecione</option>
+          {% for m in mixes %}
+            <option value="{{ m.id }}" {% if form.mix_id|default('') == m.id %}selected{% endif %}>
+              {{ m.name }} — {{ m.concrete_type }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="production_date">Data de produção</label>
+        <input type="date" id="production_date" name="production_date" value="{{ form.production_date|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="production_slump">Slump de produção (cm)</label>
+        <input type="number" step="any" min="0" id="production_slump" name="production_slump" value="{{ form.production_slump|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="fc28">fc28 (MPa)</label>
+        <input type="number" step="any" min="0" id="fc28" name="fc28" value="{{ form.fc28|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="fresh_density">Massa específica fresca média da produção . (kg/m³)</label>
+        <input type="number" step="any" min="0" id="fresh_density" name="fresh_density" value="{{ form.fresh_density|default('') }}">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('mixes') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

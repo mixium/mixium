@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        Módulo Digital do Concreto
+        {% endblock %}
+    </title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:Arial, Helvetica, sans-serif;
+            background:#f4f4f4;
+            color:#222;
+        }
+
+        header{
+
+            background:#1e3a5f;
+            color:white;
+            padding:18px 40px;
+
+        }
+
+        header h1{
+
+            margin-bottom:10px;
+
+        }
+
+        nav{
+
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+
+        }
+
+        nav a{
+
+            color:white;
+            text-decoration:none;
+
+            padding:8px 14px;
+
+            border-radius:6px;
+
+            background:rgba(255,255,255,.12);
+
+            transition:.2s;
+
+        }
+
+        nav a:hover{
+
+            background:rgba(255,255,255,.25);
+
+        }
+
+        main{
+
+            width:90%;
+            max-width:1200px;
+
+            margin:40px auto;
+
+            background:white;
+
+            padding:30px;
+
+            border-radius:10px;
+
+            box-shadow:0 2px 8px rgba(0,0,0,.15);
+
+        }
+
+        h2{
+
+            margin-bottom:20px;
+
+        }
+
+        table{
+
+            width:100%;
+            border-collapse:collapse;
+
+            margin-top:20px;
+
+        }
+
+        table th,
+        table td{
+
+            padding:12px;
+
+            border:1px solid #ddd;
+
+        }
+
+        table th{
+
+            background:#efefef;
+
+        }
+
+        input,
+        select,
+        textarea{
+
+            width:100%;
+
+            padding:10px;
+
+            margin-top:6px;
+            margin-bottom:16px;
+
+        }
+
+        button{
+
+            padding:10px 18px;
+
+            border:none;
+
+            background:#1e3a5f;
+
+            color:white;
+
+            border-radius:6px;
+
+            cursor:pointer;
+
+        }
+
+        button:hover{
+
+            background:#305b92;
+
+        }
+
+        .flash{
+
+            background:#d9f5d9;
+
+            border:1px solid #8ac98a;
+
+            padding:12px;
+
+            margin-bottom:20px;
+
+            border-radius:6px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>Módulo Digital do Concreto</h1>
+
+    <nav>
+
+        <a href="{{ url_for('home') }}">Início</a>
+
+        <a href="{{ url_for('materials') }}">Materiais</a>
+
+        <a href="{{ url_for('new_material') }}">Cadastrar Material</a>
+
+        <a href="{{ url_for('mixes') }}">Traços</a>
+
+        <a href="{{ url_for('new_mix') }}">Cadastrar Traço</a>
+
+        <a href="{{ url_for('productions') }}">Produções</a>
+
+        <a href="{{ url_for('new_production') }}">Nova Produção</a>
+
+        <a href="{{ url_for('strength_samples') }}">Corpos de Prova</a>
+
+        <a href="{{ url_for('new_strength_sample') }}">Novo Corpo de Prova</a>
+
+    </nav>
+
+</header>
+
+<main>
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="flash">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+    {% block content %}
+
+    {% endblock %}
+
+</main>
+
+</body>
+
+</html>

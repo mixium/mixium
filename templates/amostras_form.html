@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Nova amostra{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Cadastrar Amostra de Resistência</h1>
+
+  <form method="post">
+    <div class="grid">
+      <div class="field">
+        <label for="production_id">Produção de concreto</label>
+        <select id="production_id" name="production_id" required>
+          <option value="">Selecione</option>
+          {% for p in productions %}
+            <option value="{{ p.id }}" {% if form.production_id|default('') == p.id %}selected{% endif %}>
+              {{ p.production_date }} — {{ p.mix_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="specimen_number">Número do corpo de prova</label>
+        <input type="number" min="1" id="specimen_number" name="specimen_number" value="{{ form.specimen_number|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="test_date">Data de rompimento</label>
+        <input type="date" id="test_date" name="test_date" value="{{ form.test_date|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="age_days">Idade (dias)</label>
+        <input type="number" min="0" id="age_days" name="age_days" value="{{ form.age_days|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="compressive_strength">Resistência à compressão (MPa)</label>
+        <input type="number" step="any" min="0" id="compressive_strength" name="compressive_strength" value="{{ form.compressive_strength|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="curing_type">Tipo de cura</label>
+        <input type="text" id="curing_type" name="curing_type" value="{{ form.curing_type|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="specimen_diameter">Diâmetro do corpo de prova (cm)</label>
+        <select id="specimen_diameter" name="specimen_diameter">
+          <option value="">Selecione</option>
+          {% for d in diameters %}
+            <option value="{{ d }}" {% if form.specimen_diameter|default('') == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="specimen_mass">Massa do corpo de prova (g)</label>
+        <input type="number" step="any" min="0" id="specimen_mass" name="specimen_mass" value="{{ form.specimen_mass|default('') }}">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('strength_samples') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

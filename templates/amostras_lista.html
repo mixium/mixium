@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Corpos de Prova{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h1>Consulta de Corpos de Prova</h1>
+
+    <div class="actions">
+
+        <a class="btn btn-secondary"
+           href="{{ url_for('new_strength_sample') }}">
+            Novo corpo de prova
+        </a>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+<table>
+
+    <thead>
+
+        <tr>
+
+            <th>Produção</th>
+            <th>Corpo de prova</th>
+            <th>Data de rompimento</th>
+            <th>Idade (dias)</th>
+            <th>Resistência (MPa)</th>
+            <th>Tipo de cura</th>
+            <th>Diâmetro (cm)</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for sample in samples %}
+
+        <tr>
+
+            <td>{{ sample.production_date }} — {{ sample.mix_name }}</td>
+
+            <td>{{ sample.specimen_number }}</td>
+
+            <td>{{ sample.test_date }}</td>
+
+            <td>{{ sample.age_days }}</td>
+
+            <td>{{ sample.compressive_strength }}</td>
+
+            <td>{{ sample.curing_type }}</td>
+
+            <td>{{ sample.specimen_diameter }}</td>
+
+        </tr>
+
+    {% else %}
+
+        <tr>
+
+            <td colspan="7">
+
+                Nenhum corpo de prova cadastrado.
+
+            </td>
+
+        </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

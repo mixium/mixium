@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Gerar Carta de Traço{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Dados Cadastrais da Carta de Traço</h1>
+  <p><strong>Traço selecionado:</strong> {{ mix.name }} ({{ mix.concrete_type }})</p>
+
+  <!-- 1. Adicionado enctype para aceitar arquivos de imagem -->
+  <form method="post" action="{{ url_for('print_mix_pdf', mix_id=mix.id) }}" enctype="multipart/form-data">
+    <div class="grid">
+      <div class="field">
+        <label for="company">Empresa</label>
+        <input type="text" id="company" name="company" value="OS INQUEBRÁVEIS" required>
+      </div>
+
+      <div class="field">
+        <label for="interested">Interessado</label>
+        <input type="text" id="interested" name="interested" value="OS INQUEBRÁVEIS" required>
+      </div>
+
+      <div class="field">
+        <label for="reference">Referência</label>
+        <input type="text" id="reference" name="reference" value="{{ mix.name }}">
+      </div>
+
+      <div class="field">
+        <label for="doc_date">Data</label>
+        <input type="date" id="doc_date" name="doc_date" required>
+      </div>
+
+      <!-- 2. NOVO CAMPO: Upload opcional de Logo -->
+      <div class="field">
+        <label for="logo">Logotipo da Empresa (Opcional - PNG/JPG)</label>
+        <input type="file" id="logo" name="logo" accept="image/png, image/jpeg">
+        <small class="muted">Se não enviar nada, o cabeçalho ficará em branco sem imagem.</small>
+      </div>
+    </div>
+
+    <div class="actions" style="margin-top: 20px;">
+      <button class="btn btn-primary" type="submit">Gerar PDF</button>
+      <a class="btn btn-secondary" href="{{ url_for('mixes') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Preenche a data de hoje por padrão
+  document.getElementById('doc_date').valueAsDate = new Date();
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Materiais{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Consulta de Materiais</h1>
+
+  <form method="get" action="">
+    <div class="grid">
+      <div class="field">
+        <label for="q">Buscar</label>
+        <input type="text" id="q" name="q" value="{{ request.args.get('q', '') }}" placeholder="Nome ou marca">
+      </div>
+
+      <div class="field">
+        <label for="tipo">Tipo</label>
+        <select id="tipo" name="tipo">
+          <option value="">Todos</option>
+          {% for t in material_types %}
+            <option value="{{ t }}" {% if request.args.get('tipo') == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Filtrar</button>
+      <a class="btn btn-secondary" href="{{ url_for('new_material') }}">Novo material</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome comercial</th>
+        <th>Marca</th>
+        <th>Massa específica</th>
+        <th>Tipo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in materials %}
+      <tr>
+        <td>{{ m.commercial_name }}</td>
+        <td>{{ m.brand }}</td>
+        <td>{{ m.specific_mass }}</td>
+        <td>{{ m.material_type }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" class="muted">Nenhum material cadastrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
