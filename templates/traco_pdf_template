@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #2d3748;
+            font-size: 10pt;
+        }
+        .header-table {
+            width: 100%;
+            border: 1px solid #1a365d;
+            margin-bottom: 20px;
+        }
+        .header-table td {
+            padding: 8px 12px;
+            vertical-align: middle;
+        }
+        .doc-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a365d;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .data-table th {
+            background-color: #1a365d;
+            color: #ffffff;
+            padding: 6px;
+            font-size: 9pt;
+            text-align: center;
+        }
+        .data-table td {
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #cbd5e0;
+            font-size: 8.5pt;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td style="width: 70%;">
+                <strong style="font-size: 11pt; color: #1a365d;">EMPRESA: {{ header.company }}</strong><br><br>
+                <strong>Interessado:</strong> {{ header.interested }}<br>
+                <strong>Referência:</strong> {{ header.reference }}<br>
+                <strong>Data:</strong> {{ header.doc_date }}
+            </td>
+        </tr>
+    </table>
+
+    <div class="doc-title">Carta de Traço de Concreto — {{ mix.name }}</div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Consumo (kg/m³)</th>
+                <th>Proporção</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in mix.materials %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.ratio }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>
