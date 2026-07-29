@@ -412,14 +412,16 @@ latex_jinja_env = Environment(
 latex_jinja_env.filters['teX'] = _tex_escape
 
 import io
-import requests
+import urllib.parse
+import urllib.request
+from datetime import datetime
 
 def generate_traco_pdf(mix_id, form_data, files_data, root_path):
     mix = get_mix_with_materials(mix_id)
     if not mix:
         return None, "Traço não encontrado."
 
-    # 1. Tratamento básico dos dados
+    # 1. Tratamento da Data
     raw_date = form_data.get("doc_date")
     if raw_date:
         try:
@@ -434,29 +436,33 @@ def generate_traco_pdf(mix_id, form_data, files_data, root_path):
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": doc_date,
-        "logo_filename": "", # Imagens locais precisam de URL pública se usar API externa
+        "logo_filename": "", # Não envia imagem para API externa
     }
 
-    # 2. Renderiza o LaTeX em string de texto
+    # 2. Renderização TeX via Jinja2
     template = latex_jinja_env.get_template("traco_pdf.tex")
     rendered_tex = template.render(mix=mix, header=header_data)
 
-    # 3. Compila via API remota e gera o PDF na memória RAM
+    # 3. Requisição HTTP via biblioteca padrão do Python
     try:
-        response = requests.post(
-            "https://latexonline.cc/compile",
-            data={"text": rendered_tex},
-            timeout=25
+        url = "https://latexonline.cc/compile"
+        data = urllib.parse.urlencode({"text": rendered_tex}).encode("utf-8")
+        
+        req = urllib.request.Request(
+            url, 
+            data=data, 
+            headers={"User-Agent": "Mozilla/5.0"}
         )
 
-        if response.status_code == 200:
-            # Transforma os bytes do PDF em um arquivo em memória (BytesIO)
-            pdf_buffer = io.BytesIO(response.content)
-            pdf_buffer.seek(0)
-            return pdf_buffer, None
-        else:
-            return None, "Falha ao compilar o código LaTeX na API."
+        with urllib.request.urlopen(req, timeout=15) as response:
+            if response.status == 200:
+                # Carrega o PDF diretamente na memória RAM
+                pdf_buffer = io.BytesIO(response.read())
+                pdf_buffer.seek(0)
+                return pdf_buffer, None
+            else:
+                return None, f"Status de erro da API: {response.status}"
 
     except Exception as e:
-        return None, f"Erro de conexão: {str(e)}"
-        return None, str(e)
+        print(f"Erro ao compilar via API LaTeX: {e}")
+        return None, f"Erro de conexão com servidor de PDF: {str(e)}"
