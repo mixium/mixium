@@ -412,16 +412,15 @@ latex_jinja_env = Environment(
 latex_jinja_env.filters['teX'] = _tex_escape
 
 import io
-import urllib.parse
-import urllib.request
 from datetime import datetime
+from flask import render_template
+from xhtml2pdf import pisa
 
 def generate_traco_pdf(mix_id, form_data, files_data, root_path):
     mix = get_mix_with_materials(mix_id)
     if not mix:
         return None, "Traço não encontrado."
 
-    # 1. Tratamento da Data
     raw_date = form_data.get("doc_date")
     if raw_date:
         try:
@@ -436,33 +435,17 @@ def generate_traco_pdf(mix_id, form_data, files_data, root_path):
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": doc_date,
-        "logo_filename": "", # Não envia imagem para API externa
     }
 
-    # 2. Renderização TeX via Jinja2
-    template = latex_jinja_env.get_template("traco_pdf.tex")
-    rendered_tex = template.render(mix=mix, header=header_data)
+    # Renderiza o HTML com Jinja2
+    html_content = render_template("traco_pdf_template.html", mix=mix, header=header_data)
 
-    # 3. Requisição HTTP via biblioteca padrão do Python
-    try:
-        url = "https://latexonline.cc/compile"
-        data = urllib.parse.urlencode({"text": rendered_tex}).encode("utf-8")
-        
-        req = urllib.request.Request(
-            url, 
-            data=data, 
-            headers={"User-Agent": "Mozilla/5.0"}
-        )
+    # Converte direto na memória RAM
+    pdf_buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
 
-        with urllib.request.urlopen(req, timeout=15) as response:
-            if response.status == 200:
-                # Carrega o PDF diretamente na memória RAM
-                pdf_buffer = io.BytesIO(response.read())
-                pdf_buffer.seek(0)
-                return pdf_buffer, None
-            else:
-                return None, f"Status de erro da API: {response.status}"
+    if pisa_status.err:
+        return None, "Erro ao converter template para PDF."
 
-    except Exception as e:
-        print(f"Erro ao compilar via API LaTeX: {e}")
-        return None, f"Erro de conexão com servidor de PDF: {str(e)}"
+    pdf_buffer.seek(0)
+    return pdf_buffer, None
