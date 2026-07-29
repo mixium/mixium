@@ -95,7 +95,6 @@ def print_mix_pdf(mix_id):
     if request.method == "GET":
         return render_template("traco_pdf_form.html", mix=mix)
 
-    # pdf_buffer agora é o arquivo direto na memória RAM
     pdf_buffer, error = generate_traco_pdf(
         mix_id=mix_id,
         form_data=request.form,
@@ -107,14 +106,12 @@ def print_mix_pdf(mix_id):
         flash(f"Erro ao gerar PDF: {error}")
         return redirect(url_for("mixes"))
 
-    # Entrega direto para o usuário baixar
     return send_file(
         pdf_buffer,
         mimetype="application/pdf",
         as_attachment=True,
         download_name=f"Carta_Traco_{mix['name']}.pdf"
     )
-
 
 # ==========================================================
 # Concrete Productions
