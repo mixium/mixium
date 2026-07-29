@@ -411,30 +411,15 @@ latex_jinja_env = Environment(
 )
 latex_jinja_env.filters['teX'] = _tex_escape
 
+import io
+import requests
+
 def generate_traco_pdf(mix_id, form_data, files_data, root_path):
-    """
-    Processa os dados do formulário, trata a logo (opcional), renderiza o .tex e compila o PDF.
-    Retorna o caminho do arquivo PDF em caso de sucesso, ou (None, log_erro) em caso de falha.
-    """
     mix = get_mix_with_materials(mix_id)
     if not mix:
         return None, "Traço não encontrado."
 
-    build_dir = os.path.join(root_path, "build")
-    os.makedirs(build_dir, exist_ok=True)
-
-    # 1. Tratamento do Logotipo (Opcional)
-    logo_filename = ""  # Se não houver envio, fica vazio
-    logo_file = files_data.get("logo")
-
-    if logo_file and logo_file.filename != "":
-        ext = os.path.splitext(logo_file.filename)[1].lower()
-        if ext in [".png", ".jpg", ".jpeg"]:
-            logo_filename = f"custom_logo_{mix_id}{ext}"
-            logo_path = os.path.join(build_dir, logo_filename)
-            logo_file.save(logo_path)
-
-    # 2. Formatação da Data
+    # 1. Tratamento básico dos dados
     raw_date = form_data.get("doc_date")
     if raw_date:
         try:
@@ -449,36 +434,29 @@ def generate_traco_pdf(mix_id, form_data, files_data, root_path):
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": doc_date,
-        "logo_filename": logo_filename,  # Envia a string com o nome do arquivo ou vazia ""
+        "logo_filename": "", # Imagens locais precisam de URL pública se usar API externa
     }
 
-    # 3. Renderização TeX
+    # 2. Renderiza o LaTeX em string de texto
     template = latex_jinja_env.get_template("traco_pdf.tex")
     rendered_tex = template.render(mix=mix, header=header_data)
 
-    tex_file = os.path.join(build_dir, f"traco_{mix_id}.tex")
-    pdf_file = os.path.join(build_dir, f"traco_{mix_id}.pdf")
-
-    with open(tex_file, "w", encoding="utf-8") as f:
-        f.write(rendered_tex)
-
-    # 4. Compilação pdflatex
+    # 3. Compila via API remota e gera o PDF na memória RAM
     try:
-        cmd = [
-            "pdflatex",
-            "-interaction=nonstopmode",
-            f"-output-directory={build_dir}",
-            tex_file
-        ]
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        response = requests.post(
+            "https://latexonline.cc/compile",
+            data={"text": rendered_tex},
+            timeout=25
+        )
 
-        if result.returncode != 0:
-            error_log = result.stdout.decode('utf-8', errors='ignore')
-            print("----- LOG COMPILACAO PDFLATEX -----")
-            print(error_log)
-            print("-----------------------------------")
-            return None, "Erro na compilação LaTeX. Verifique os logs no terminal."
+        if response.status_code == 200:
+            # Transforma os bytes do PDF em um arquivo em memória (BytesIO)
+            pdf_buffer = io.BytesIO(response.content)
+            pdf_buffer.seek(0)
+            return pdf_buffer, None
+        else:
+            return None, "Falha ao compilar o código LaTeX na API."
 
-        return pdf_file, None
     except Exception as e:
+        return None, f"Erro de conexão: {str(e)}"
         return None, str(e)
