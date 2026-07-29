@@ -5,67 +5,104 @@
     <style>
         @page {
             size: A4;
-            margin: 15mm;
+            margin: 1.5cm;
         }
         body {
             font-family: Helvetica, Arial, sans-serif;
-            color: #2d3748;
-            font-size: 10pt;
+            color: #000000;
+            font-size: 9pt;
         }
-        .header-table {
-            width: 100%;
-            border: 1px solid #1a365d;
+        
+        /* Caixa do Cabeçalho (Equivalente ao tcolorbox) */
+        .header-box {
+            border: 0.8pt solid #000000;
+            padding: 8px 12px;
             margin-bottom: 20px;
         }
-        .header-table td {
-            padding: 8px 12px;
-            vertical-align: middle;
-        }
-        .doc-title {
-            text-align: center;
-            font-size: 14pt;
-            font-weight: bold;
-            color: #1a365d;
-            margin: 20px 0;
-            text-transform: uppercase;
-        }
-        .data-table {
+        .header-box table {
             width: 100%;
             border-collapse: collapse;
+        }
+        .header-box td {
+            vertical-align: top;
+            padding: 0;
+        }
+        
+        /* Título Principal */
+        .doc-title {
+            text-align: center;
+            font-size: 13pt;
+            font-weight: bold;
             margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
         }
-        .data-table th {
-            background-color: #1a365d;
-            color: #ffffff;
-            padding: 6px;
-            font-size: 9pt;
-            text-align: center;
+
+        /* Tabelas Estilizadas */
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            margin-bottom: 15px;
         }
-        .data-table td {
-            padding: 6px;
-            text-align: center;
-            border: 1px solid #cbd5e0;
+        .pdf-table th {
+            border: 0.8pt solid #000000;
+            padding: 5px;
             font-size: 8.5pt;
+            font-weight: bold;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        .pdf-table td {
+            border: 0.8pt solid #000000;
+            padding: 5px;
+            text-align: center;
+            font-size: 8.5pt;
+        }
+
+        .caption {
+            font-size: 9.5pt;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+        
+        .info-text {
+            font-size: 9pt;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
 
-    <table class="header-table">
-        <tr>
-            <td>
-                <strong style="font-size: 11pt; color: #1a365d;">EMPRESA: {{ header.company }}</strong><br><br>
-                <strong>Interessado:</strong> {{ header.interested }}<br>
-                <strong>Referência:</strong> {{ header.reference }}<br>
-                <strong>Data:</strong> {{ header.doc_date }}
-            </td>
-        </tr>
-    </table>
+    <!-- Caixa Superior (Cabeçalho do LaTeX) -->
+    <div class="header-box">
+        <table>
+            <tr>
+                <td style="width: 65%;">
+                    <strong>Empresa:</strong> {{ header.company }}<br>
+                    <strong>Data:</strong> {{ header.doc_date }}<br>
+                    <strong>Interessado:</strong> {{ header.interested }}<br>
+                    <strong>Referência:</strong> {{ header.reference }}<br>
+                    <strong>fck(MPa):</strong> {{ mix.fck28 or '-' }}<br>
+                    <strong>Slump(cm):</strong> {{ mix.target_slump or '-' }}
+                </td>
+                <td style="width: 35%; text-align: right;">
+                    {% if header.logo_filename %}
+                        <img src="{{ header.logo_filename }}" style="max-height: 2.2cm;">
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
 
-    <div class="doc-title">Carta de Validação de Traço Quantitativo</div>
+    <!-- Título Principal -->
+    <div class="doc-title">
+        VALIDAÇÃO DE TRAÇO QUANTITATIVO
+    </div>
 
-    <table class="data-table">
+    <!-- Tabela 1: Traço e Materiais -->
+    <div class="caption"><strong>Tabela 1:</strong> Traço e Materiais</div>
+    <table class="pdf-table">
         <thead>
             <tr>
                 <th>Material</th>
@@ -78,13 +115,41 @@
         <tbody>
             {% for mat in mix.materials %}
             <tr>
-                <td>{{ mat.commercial_name }}</td>
-                <td>{{ mat.material_type }}</td>
-                <td>{{ mat.ratio }}</td>
-                <td>{{ mat.consumption }}</td>
-                <td>{{ mat.specific_mass_kg_m3 }}</td>
+                <td style="text-align: left;">{{ mat.commercial_name or '-' }}</td>
+                <td>{{ mat.material_type or '-' }}</td>
+                <td>{{ mat.ratio or '-' }}</td>
+                <td>{{ mat.consumption or '-' }}</td>
+                <td>{{ mat.specific_mass_kg_m3 or '-' }}</td>
             </tr>
             {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Relação Água/Cimento -->
+    <div class="info-text">
+        <strong>Relação água/cimento:</strong> {{ mix.water_cement_ratio or 'N/A' }}
+    </div>
+
+    <!-- Tabela 2: Informações Adicionais -->
+    <div class="caption" style="margin-top: 15px;"><strong>Tabela 2:</strong> Informações adicionais do traço</div>
+    <table class="pdf-table" style="width: 80%; margin-left: auto; margin-right: auto;">
+        <tbody>
+            <tr>
+                <td style="text-align: left; font-weight: bold; width: 60%;">Teor de Argamassa (&alpha;)</td>
+                <td>{{ mix.alpha or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; font-weight: bold;">Massa específica teórica (kg/m³)</td>
+                <td>{{ mix.theoretical_density or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; font-weight: bold;">Massa específica real (kg/m³)</td>
+                <td>{{ mix.specific_mass or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="text-align: left; font-weight: bold;">Ar incorporado (m³/m³)</td>
+                <td>{{ mix.air_entrained or '-' }}</td>
+            </tr>
         </tbody>
     </table>
 
