@@ -416,17 +416,11 @@ from datetime import datetime
 from flask import render_template
 from xhtml2pdf import pisa
 
-import io
-from datetime import datetime
-from flask import render_template
-from xhtml2pdf import pisa
-
 def generate_traco_pdf(mix_id, form_data, files_data, root_path):
     mix = get_mix_with_materials(mix_id)
     if not mix:
         return None, "Traço não encontrado."
 
-    # Tratamento da data do formulário
     raw_date = form_data.get("doc_date")
     if raw_date:
         try:
@@ -441,18 +435,17 @@ def generate_traco_pdf(mix_id, form_data, files_data, root_path):
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": doc_date,
+        "logo_filename": form_data.get("logo_filename", ""),
     }
 
-    # 1. Renderiza o template HTML (que substitui o .tex)
+    # Renderiza o HTML idêntico ao layout TeX
     html_content = render_template("traco_pdf_template.html", mix=mix, header=header_data)
 
-    # 2. Converte o HTML em PDF direto na memória RAM
     pdf_buffer = io.BytesIO()
     pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
 
     if pisa_status.err:
-        return None, "Erro ao converter o template para PDF."
+        return None, "Erro ao gerar o PDF."
 
-    # Prepara o ponteiro da memória para leitura
     pdf_buffer.seek(0)
     return pdf_buffer, None
