@@ -54,7 +54,7 @@
 
     <table class="header-table">
         <tr>
-            <td style="width: 70%;">
+            <td>
                 <strong style="font-size: 11pt; color: #1a365d;">EMPRESA: {{ header.company }}</strong><br><br>
                 <strong>Interessado:</strong> {{ header.interested }}<br>
                 <strong>Referência:</strong> {{ header.reference }}<br>
@@ -63,22 +63,26 @@
         </tr>
     </table>
 
-    <div class="doc-title">Carta de Traço de Concreto — {{ mix.name }}</div>
+    <div class="doc-title">Carta de Validação de Traço Quantitativo</div>
 
     <table class="data-table">
         <thead>
             <tr>
                 <th>Material</th>
+                <th>Tipo</th>
+                <th>Traço (g/g)</th>
                 <th>Consumo (kg/m³)</th>
-                <th>Proporção</th>
+                <th>Massa Específica (kg/m³)</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in mix.materials %}
+            {% for mat in mix.materials %}
             <tr>
-                <td>{{ item.name }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.ratio }}</td>
+                <td>{{ mat.commercial_name }}</td>
+                <td>{{ mat.material_type }}</td>
+                <td>{{ mat.ratio }}</td>
+                <td>{{ mat.consumption }}</td>
+                <td>{{ mat.specific_mass_kg_m3 }}</td>
             </tr>
             {% endfor %}
         </tbody>
