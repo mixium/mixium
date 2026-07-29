@@ -92,24 +92,25 @@ def print_mix_pdf(mix_id):
         flash("Traço não encontrado.")
         return redirect(url_for("mixes"))
 
-    # GET: Exibe o formulário para preencher os dados do cabeçalho / logo
     if request.method == "GET":
         return render_template("traco_pdf_form.html", mix=mix)
 
-    # POST: Delega a geração do arquivo para a regra de negócio em models.py
-    pdf_path, error = generate_traco_pdf(
+    # pdf_buffer agora é o arquivo direto na memória RAM
+    pdf_buffer, error = generate_traco_pdf(
         mix_id=mix_id,
         form_data=request.form,
         files_data=request.files,
         root_path=app.root_path
     )
 
-    if error or not pdf_path:
+    if error or not pdf_buffer:
         flash(f"Erro ao gerar PDF: {error}")
         return redirect(url_for("mixes"))
 
+    # Entrega direto para o usuário baixar
     return send_file(
-        pdf_path,
+        pdf_buffer,
+        mimetype="application/pdf",
         as_attachment=True,
         download_name=f"Carta_Traco_{mix['name']}.pdf"
     )
