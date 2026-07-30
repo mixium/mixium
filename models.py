@@ -396,31 +396,29 @@ def _tex_escape(text):
 # Caminho base dos templates
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
-latex_jinja_env = Environment(
-    block_start_string='<%',
-    block_end_string='%>',
-    variable_start_string='<<',
-    variable_end_string='>>',
-    comment_start_string='<#',
-    comment_end_string='#>',
-    line_statement_prefix='<%-',
-    line_comment_prefix='<#',
-    trim_blocks=True,
-    autoescape=False,
-    loader=FileSystemLoader(TEMPLATES_DIR)
-)
-latex_jinja_env.filters['teX'] = _tex_escape
-
 import io
+import os
+import base64
 from datetime import datetime
 from flask import render_template
 from xhtml2pdf import pisa
+
+def get_image_base64(image_path):
+    """Converte uma imagem local em string Base64 para o HTML do xhtml2pdf."""
+    if image_path and os.path.exists(image_path):
+        with open(image_path, "rb") as image_file:
+            encoded = base64.b64encode(image_file.read()).decode('utf-8')
+            ext = image_path.split('.')[-1].lower()
+            mime = "image/png" if ext == "png" else "image/jpeg"
+            return f"data:{mime};base64,{encoded}"
+    return ""
 
 def generate_traco_pdf(mix_id, form_data, files_data, root_path):
     mix = get_mix_with_materials(mix_id)
     if not mix:
         return None, "Traço não encontrado."
 
+    # Trata a data
     raw_date = form_data.get("doc_date")
     if raw_date:
         try:
@@ -430,15 +428,28 @@ def generate_traco_pdf(mix_id, form_data, files_data, root_path):
     else:
         doc_date = datetime.now().strftime("%d/%m/%Y")
 
+    # Lógica para tratar a logo (se enviada via formulário ou arquivo estático)
+    logo_base64 = ""
+    logo_file = files_data.get("logo") if files_data else None
+    
+    if logo_file and logo_file.filename:
+        # Se o usuário enviou um arquivo de logo no formulário
+        encoded = base64.b64encode(logo_file.read()).decode('utf-8')
+        mime = logo_file.content_type or "image/png"
+        logo_base64 = f"data:{mime};base64,{encoded}"
+    else:
+        # Se houver uma logo padrão na pasta static
+        default_logo_path = os.path.join(root_path, "static", "images", "logo.png")
+        logo_base64 = get_image_base64(default_logo_path)
+
     header_data = {
         "company": form_data.get("company", ""),
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": doc_date,
-        "logo_filename": form_data.get("logo_filename", ""),
+        "logo_base64": logo_base64,
     }
 
-    # Renderiza o HTML idêntico ao layout TeX
     html_content = render_template("traco_pdf_template.html", mix=mix, header=header_data)
 
     pdf_buffer = io.BytesIO()
