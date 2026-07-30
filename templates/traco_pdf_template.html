@@ -4,79 +4,82 @@
     <meta charset="utf-8">
     <style>
         @page {
-            size: A4;
+            size: A4 portrait;
             margin: 1.5cm;
         }
         body {
             font-family: Helvetica, Arial, sans-serif;
             color: #000000;
             font-size: 9pt;
+            line-height: 1.3;
         }
         
-        /* Caixa do Cabeçalho (Equivalente ao tcolorbox) */
+        /* Box Superior / Cabeçalho */
         .header-box {
-            border: 0.8pt solid #000000;
-            padding: 8px 12px;
-            margin-bottom: 20px;
+            border: 1px solid #000000;
+            padding: 8px;
+            margin-bottom: 15px;
         }
-        .header-box table {
+        .header-table {
             width: 100%;
             border-collapse: collapse;
         }
-        .header-box td {
-            vertical-align: top;
+        .header-table td {
+            vertical-align: middle;
             padding: 0;
+            border: none;
         }
         
-        /* Título Principal */
+        /* Título Central */
         .doc-title {
             text-align: center;
-            font-size: 13pt;
+            font-size: 12pt;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
             margin-bottom: 15px;
             text-transform: uppercase;
         }
 
-        /* Tabelas Estilizadas */
-        .pdf-table {
+        .caption {
+            font-size: 9pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        /* Tabelas Estilizadas com Larguras Fixas */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
             margin-bottom: 15px;
         }
-        .pdf-table th {
-            border: 0.8pt solid #000000;
+        .data-table th {
+            border: 1px solid #000000;
             padding: 5px;
             font-size: 8.5pt;
             font-weight: bold;
             text-align: center;
-            background-color: #f0f0f0;
+            background-color: #f2f2f2;
         }
-        .pdf-table td {
-            border: 0.8pt solid #000000;
-            padding: 5px;
+        .data-table td {
+            border: 1px solid #000000;
+            padding: 4px 6px;
             text-align: center;
             font-size: 8.5pt;
+            vertical-align: middle;
         }
 
-        .caption {
-            font-size: 9.5pt;
-            text-align: center;
-            margin-bottom: 4px;
-        }
-        
         .info-text {
             font-size: 9pt;
-            margin: 10px 0;
+            margin: 12px 0;
         }
     </style>
 </head>
 <body>
 
-    <!-- Caixa Superior (Cabeçalho do LaTeX) -->
+    <!-- Cabeçalho em Caixa -->
     <div class="header-box">
-        <table>
+        <table class="header-table">
             <tr>
                 <td style="width: 65%;">
                     <strong>Empresa:</strong> {{ header.company }}<br>
@@ -87,8 +90,8 @@
                     <strong>Slump(cm):</strong> {{ mix.target_slump or '-' }}
                 </td>
                 <td style="width: 35%; text-align: right;">
-                    {% if header.logo_filename %}
-                        <img src="{{ header.logo_filename }}" style="max-height: 2.2cm;">
+                    {% if header.logo_base64 %}
+                        <img src="{{ header.logo_base64 }}" style="max-height: 2.2cm; max-width: 5cm;">
                     {% endif %}
                 </td>
             </tr>
@@ -100,16 +103,16 @@
         VALIDAÇÃO DE TRAÇO QUANTITATIVO
     </div>
 
-    <!-- Tabela 1: Traço e Materiais -->
-    <div class="caption"><strong>Tabela 1:</strong> Traço e Materiais</div>
-    <table class="pdf-table">
+    <!-- Tabela 1: Materiais -->
+    <div class="caption">Traço e Materiais</div>
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Material</th>
-                <th>Tipo</th>
-                <th>Traço (g/g)</th>
-                <th>Consumo (kg/m³)</th>
-                <th>Massa Específica (kg/m³)</th>
+                <th style="width: 30%;">Material</th>
+                <th style="width: 18%;">Tipo</th>
+                <th style="width: 16%;">Traço (g/g)</th>
+                <th style="width: 18%;">Consumo (kg/m³)</th>
+                <th style="width: 18%;">Massa Específica (kg/m³)</th>
             </tr>
         </thead>
         <tbody>
@@ -125,18 +128,17 @@
         </tbody>
     </table>
 
-    <!-- Relação Água/Cimento -->
     <div class="info-text">
         <strong>Relação água/cimento:</strong> {{ mix.water_cement_ratio or 'N/A' }}
     </div>
 
-    <!-- Tabela 2: Informações Adicionais -->
-    <div class="caption" style="margin-top: 15px;"><strong>Tabela 2:</strong> Informações adicionais do traço</div>
-    <table class="pdf-table" style="width: 80%; margin-left: auto; margin-right: auto;">
+    <!-- Tabela 2: Propriedades -->
+    <div class="caption" style="margin-top: 15px;">Informações adicionais do traço</div>
+    <table class="data-table" style="width: 80%; margin-left: auto; margin-right: auto;">
         <tbody>
             <tr>
-                <td style="text-align: left; font-weight: bold; width: 60%;">Teor de Argamassa (&alpha;)</td>
-                <td>{{ mix.alpha or '-' }}</td>
+                <td style="text-align: left; font-weight: bold; width: 65%;">Teor de Argamassa (&alpha;)</td>
+                <td style="width: 35%;">{{ mix.alpha or '-' }}</td>
             </tr>
             <tr>
                 <td style="text-align: left; font-weight: bold;">Massa específica teórica (kg/m³)</td>
