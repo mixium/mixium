@@ -207,4 +207,3 @@ def new_strength_sample():
         productions=list_concrete_productions(),
         diameters=get_specimen_diameters()
     )
-
