@@ -86,11 +86,6 @@ def new_mix():
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
 import base64
-from flask import render_template, request, redirect, url_for, send_file, flash
-
-import base64
-import io
-from flask import render_template, request, redirect, url_for, send_file, flash
 
 @app.route('/mixes/<int:mix_id>/pdf', methods=['GET', 'POST'])
 def print_mix_pdf(mix_id):
@@ -99,11 +94,11 @@ def print_mix_pdf(mix_id):
         flash("Traço não encontrado.", "danger")
         return redirect(url_for('mixes'))
 
-    # Se clicar no botão da lista (GET), abre a página do formulário
+    # GET: Abre o formulário traco_pdf_form.html
     if request.method == 'GET':
         return render_template('traco_pdf_form.html', mix=mix)
 
-    # Se enviar o formulário (POST), processa os dados e a logo
+    # POST: Lê o arquivo 'logo' do formulário
     logo_file = request.files.get('logo')
     logo_base64 = ""
 
@@ -114,8 +109,6 @@ def print_mix_pdf(mix_id):
         logo_base64 = f"data:{mime_type};base64,{encoded}"
 
     form_data = request.form.to_dict()
-    
-    # Criamos a estrutura esperada pela função generate_traco_pdf
     form_payload = {
         "company": form_data.get("company", ""),
         "interested": form_data.get("interested", ""),
@@ -124,8 +117,7 @@ def print_mix_pdf(mix_id):
         "logo_base64": logo_base64
     }
 
-    # Passamos form_payload como form_data para evitar cair na validação
-    pdf_buffer, error = generate_traco_pdf(mix_id, form_data=form_payload, files_data=request.files, root_path=app.root_path)
+    pdf_buffer, error = generate_traco_pdf(mix, form_data=form_payload)
 
     if error:
         flash(f"Erro ao gerar PDF: {error}", "danger")
