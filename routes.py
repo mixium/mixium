@@ -84,9 +84,7 @@ def new_mix():
 
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
-
 import base64
-
 @app.route('/mixes/<int:mix_id>/pdf', methods=['POST'])
 def print_mix_pdf(mix_id):
     # Pega o arquivo de imagem enviado pelo usuário no formulário
@@ -107,12 +105,23 @@ def print_mix_pdf(mix_id):
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
         "doc_date": form_data.get("doc_date", ""),
-        "logo_base64": logo_base64  # Aqui entra a imagem vinda do input
+        "logo_base64": logo_base64
     }
 
     # Gera o PDF passando o header_data
     pdf_buffer, error = generate_traco_pdf(mix_id, header_data)
-    ...
+
+    if error:
+        flash(f"Erro ao gerar PDF: {error}", "danger")
+        return redirect(url_for('mixes'))
+
+    # Retorna o arquivo gerado diretamente no navegador do usuário
+    return send_file(
+        pdf_buffer,
+        as_attachment=False,
+        mimetype='application/pdf',
+        download_name=f'traco_{mix_id}.pdf'
+    )
 
 # ==========================================================
 # Concrete Productions
