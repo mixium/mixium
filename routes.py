@@ -88,22 +88,25 @@ def new_mix():
 import base64
 from flask import render_template, request, redirect, url_for, send_file, flash
 
+import base64
+import io
+from flask import render_template, request, redirect, url_for, send_file, flash
+
 @app.route('/mixes/<int:mix_id>/pdf', methods=['GET', 'POST'])
 def print_mix_pdf(mix_id):
-    mix = get_mix_with_materials(mix_id) # Sua função de busca no BD
+    mix = get_mix_with_materials(mix_id)
     if not mix:
         flash("Traço não encontrado.", "danger")
         return redirect(url_for('mixes'))
 
-    # GET: Renderiza o formulário que você acabou de mostrar
+    # Se clicar no botão da lista (GET), abre a página do formulário
     if request.method == 'GET':
         return render_template('traco_pdf_form.html', mix=mix)
 
-    # POST: Processa o envio do formulário
+    # Se enviar o formulário (POST), processa os dados e a logo
     logo_file = request.files.get('logo')
     logo_base64 = ""
 
-    # Se o usuário submeteu um arquivo de imagem
     if logo_file and logo_file.filename != '':
         image_bytes = logo_file.read()
         encoded = base64.b64encode(image_bytes).decode('utf-8')
@@ -111,7 +114,9 @@ def print_mix_pdf(mix_id):
         logo_base64 = f"data:{mime_type};base64,{encoded}"
 
     form_data = request.form.to_dict()
-    header_data = {
+    
+    # Criamos a estrutura esperada pela função generate_traco_pdf
+    form_payload = {
         "company": form_data.get("company", ""),
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
@@ -119,8 +124,8 @@ def print_mix_pdf(mix_id):
         "logo_base64": logo_base64
     }
 
-    # Gera o PDF passando o mix e os dados do formulário
-    pdf_buffer, error = generate_traco_pdf(mix, header_data)
+    # Passamos form_payload como form_data para evitar cair na validação
+    pdf_buffer, error = generate_traco_pdf(mix_id, form_data=form_payload, files_data=request.files, root_path=app.root_path)
 
     if error:
         flash(f"Erro ao gerar PDF: {error}", "danger")
