@@ -413,50 +413,39 @@ def get_image_base64(image_path):
             return f"data:{mime};base64,{encoded}"
     return ""
 
-def generate_traco_pdf(mix_id, form_data, files_data, root_path):
-    mix = get_mix_with_materials(mix_id)
+import io
+from flask import render_template
+from xhtml2pdf import pisa
+
+def generate_traco_pdf(mix_id, form_data=None, files_data=None, root_path=None):
+    # Se o primeiro argumento já for o objeto mix, usamos ele, senão buscamos pelo id
+    if isinstance(mix_id, dict):
+        mix = mix_id
+    else:
+        mix = get_mix_with_materials(mix_id)
+
     if not mix:
         return None, "Traço não encontrado."
 
-    # Trata a data
-    raw_date = form_data.get("doc_date")
-    if raw_date:
-        try:
-            doc_date = datetime.strptime(raw_date, "%Y-%m-%d").strftime("%d/%m/%Y")
-        except ValueError:
-            doc_date = raw_date
-    else:
-        doc_date = datetime.now().strftime("%d/%m/%Y")
+    form_data = form_data or {}
 
-    # Lógica para tratar a logo (se enviada via formulário ou arquivo estático)
-    logo_base64 = ""
-    logo_file = files_data.get("logo") if files_data else None
-    
-    if logo_file and logo_file.filename:
-        # Se o usuário enviou um arquivo de logo no formulário
-        encoded = base64.b64encode(logo_file.read()).decode('utf-8')
-        mime = logo_file.content_type or "image/png"
-        logo_base64 = f"data:{mime};base64,{encoded}"
-    else:
-        # Se houver uma logo padrão na pasta static
-        default_logo_path = os.path.join(root_path, "static", "images", "logo.png")
-        logo_base64 = get_image_base64(default_logo_path)
-
+    # O dicionário 'header' é enviado para o Jinja2 no template HTML do PDF
     header_data = {
         "company": form_data.get("company", ""),
         "interested": form_data.get("interested", ""),
         "reference": form_data.get("reference", ""),
-        "doc_date": doc_date,
-        "logo_base64": logo_base64,
+        "doc_date": form_data.get("doc_date", ""),
+        "logo_base64": form_data.get("logo_base64", "") # Passa a imagem convertida
     }
 
+    # Renderiza o HTML com a chave 'header'
     html_content = render_template("traco_pdf_template.html", mix=mix, header=header_data)
 
     pdf_buffer = io.BytesIO()
     pisa_status = pisa.CreatePDF(html_content, dest=pdf_buffer)
 
     if pisa_status.err:
-        return None, "Erro ao gerar o PDF."
+        return None, "Erro ao gerar o PDF com xhtml2pdf."
 
     pdf_buffer.seek(0)
     return pdf_buffer, None
