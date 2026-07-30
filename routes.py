@@ -3,6 +3,7 @@ from app import app
 from models import *
 import os
 from flask import render_template, request, redirect, url_for, flash, send_file
+import base64
 
 
 
@@ -84,21 +85,22 @@ def new_mix():
 
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
-import base64
-@app.route('/mixes/<int:mix_id>/pdf', methods=['POST'])
+@app.route('/mixes/<int:mix_id>/pdf', methods=['GET', 'POST'])
 def print_mix_pdf(mix_id):
+    if request.method == 'GET':
+        flash("A geração de PDF deve ser solicitada através do formulário de emissão.", "warning")
+        return redirect(url_for('mixes'))
+
     # Pega o arquivo de imagem enviado pelo usuário no formulário
     logo_file = request.files.get('logo') # 'logo' é o name do <input type="file">
     logo_base64 = ""
 
     if logo_file and logo_file.filename != '':
-        # Lê os bytes da imagem enviada e converte para base64
         image_bytes = logo_file.read()
         encoded = base64.b64encode(image_bytes).decode('utf-8')
         mime_type = logo_file.mimetype or 'image/png'
         logo_base64 = f"data:{mime_type};base64,{encoded}"
 
-    # Passa o logo_base64 nos dados do header para a função que gera o PDF
     form_data = request.form.to_dict()
     header_data = {
         "company": form_data.get("company", ""),
@@ -108,21 +110,18 @@ def print_mix_pdf(mix_id):
         "logo_base64": logo_base64
     }
 
-    # Gera o PDF passando o header_data
     pdf_buffer, error = generate_traco_pdf(mix_id, header_data)
 
     if error:
         flash(f"Erro ao gerar PDF: {error}", "danger")
         return redirect(url_for('mixes'))
 
-    # Retorna o arquivo gerado diretamente no navegador do usuário
     return send_file(
         pdf_buffer,
         as_attachment=False,
         mimetype='application/pdf',
         download_name=f'traco_{mix_id}.pdf'
     )
-
 # ==========================================================
 # Concrete Productions
 # ==========================================================
