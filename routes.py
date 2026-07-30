@@ -85,33 +85,34 @@ def new_mix():
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
 
-@app.route("/mixes/<int:mix_id>/pdf", methods=["GET", "POST"])
+import base64
+
+@app.route('/mixes/<int:mix_id>/pdf', methods=['POST'])
 def print_mix_pdf(mix_id):
-    mix = get_mix_with_materials(mix_id)
-    if not mix:
-        flash("Traço não encontrado.")
-        return redirect(url_for("mixes"))
+    # Pega o arquivo de imagem enviado pelo usuário no formulário
+    logo_file = request.files.get('logo') # 'logo' é o name do <input type="file">
+    logo_base64 = ""
 
-    if request.method == "GET":
-        return render_template("traco_pdf_form.html", mix=mix)
+    if logo_file and logo_file.filename != '':
+        # Lê os bytes da imagem enviada e converte para base64
+        image_bytes = logo_file.read()
+        encoded = base64.b64encode(image_bytes).decode('utf-8')
+        mime_type = logo_file.mimetype or 'image/png'
+        logo_base64 = f"data:{mime_type};base64,{encoded}"
 
-    pdf_buffer, error = generate_traco_pdf(
-        mix_id=mix_id,
-        form_data=request.form,
-        files_data=request.files,
-        root_path=app.root_path
-    )
+    # Passa o logo_base64 nos dados do header para a função que gera o PDF
+    form_data = request.form.to_dict()
+    header_data = {
+        "company": form_data.get("company", ""),
+        "interested": form_data.get("interested", ""),
+        "reference": form_data.get("reference", ""),
+        "doc_date": form_data.get("doc_date", ""),
+        "logo_base64": logo_base64  # Aqui entra a imagem vinda do input
+    }
 
-    if error or not pdf_buffer:
-        flash(f"Erro ao gerar PDF: {error}")
-        return redirect(url_for("mixes"))
-
-    return send_file(
-        pdf_buffer,
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"Carta_Traco_{mix['name']}.pdf"
-    )
+    # Gera o PDF passando o header_data
+    pdf_buffer, error = generate_traco_pdf(mix_id, header_data)
+    ...
 
 # ==========================================================
 # Concrete Productions
