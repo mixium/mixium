@@ -85,16 +85,25 @@ def new_mix():
 
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
+import base64
+from flask import render_template, request, redirect, url_for, send_file, flash
+
 @app.route('/mixes/<int:mix_id>/pdf', methods=['GET', 'POST'])
 def print_mix_pdf(mix_id):
-    if request.method == 'GET':
-        flash("A geração de PDF deve ser solicitada através do formulário de emissão.", "warning")
+    mix = get_mix_with_materials(mix_id) # Sua função de busca no BD
+    if not mix:
+        flash("Traço não encontrado.", "danger")
         return redirect(url_for('mixes'))
 
-    # Pega o arquivo de imagem enviado pelo usuário no formulário
-    logo_file = request.files.get('logo') # 'logo' é o name do <input type="file">
+    # GET: Renderiza o formulário que você acabou de mostrar
+    if request.method == 'GET':
+        return render_template('traco_pdf_form.html', mix=mix)
+
+    # POST: Processa o envio do formulário
+    logo_file = request.files.get('logo')
     logo_base64 = ""
 
+    # Se o usuário submeteu um arquivo de imagem
     if logo_file and logo_file.filename != '':
         image_bytes = logo_file.read()
         encoded = base64.b64encode(image_bytes).decode('utf-8')
@@ -110,18 +119,20 @@ def print_mix_pdf(mix_id):
         "logo_base64": logo_base64
     }
 
-    pdf_buffer, error = generate_traco_pdf(mix_id, header_data)
+    # Gera o PDF passando o mix e os dados do formulário
+    pdf_buffer, error = generate_traco_pdf(mix, header_data)
 
     if error:
         flash(f"Erro ao gerar PDF: {error}", "danger")
-        return redirect(url_for('mixes'))
+        return redirect(url_for('print_mix_pdf', mix_id=mix_id))
 
     return send_file(
         pdf_buffer,
         as_attachment=False,
         mimetype='application/pdf',
-        download_name=f'traco_{mix_id}.pdf'
+        download_name=f'Carta_Traco_{mix_id}.pdf'
     )
+    
 # ==========================================================
 # Concrete Productions
 # ==========================================================
