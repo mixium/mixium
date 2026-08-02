@@ -32,7 +32,6 @@
         <th>Consumo de cimento (kg/m³)</th>
         <th>Massa específica real</th>
         <th>Composição</th>
-          <td>{{ mix.composition }}</td>
         <th>Ações</th> <!-- 1. ADICIONADO AQUI -->
       </tr>
     </thead>
@@ -46,6 +45,7 @@
         <td>{{ m.target_slump }}</td>
         <td>{{ m.cement_consumption }}</td>
         <td>{{ m.specific_mass }}</td>
+        <td>{{ m.composition }}</td>
         <td>
           <!-- 2. BOTÃO ADICIONADO AQUI -->
           <a class="btn btn-secondary" href="{{ url_for('print_mix_pdf', mix_id=m.id) }}">
