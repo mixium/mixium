@@ -72,7 +72,7 @@ def new_mix():
             "mix_name": request.form["mix_name"],
             "concrete_type": request.form["concrete_type"],
             "color": request.form["color"],
-            "fck28": request.form["fck28"],
+            "fckest28_MPa": request.form["fckest28_MPa"],
             "target_slump": request.form["target_slump"],
             "cement_consumption": request.form["cement_consumption"],
             "specific_mass": request.form["specific_mass"],
