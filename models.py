@@ -263,7 +263,7 @@ def list_concrete_productions():
             t."Nome"                                 AS mix_name,
             p."DataProducao"                         AS production_date,
             p."SlumpProducao_cm"                     AS production_slump,
-            p."fc28_MPa"                              AS fc28,
+            p."fcm28_MPa"                              AS fcm28,
             p."Massa_especifica_fresca_kg_m3"        AS fresh_density
         FROM "ProducaoConcreto" p
         LEFT JOIN "Traco" t ON t."id_Traco" = p."id_Traco"
@@ -275,9 +275,9 @@ def list_concrete_productions():
 def create_concrete_production(data):
     query = """
         INSERT INTO "ProducaoConcreto"
-            ("id_Traco", "DataProducao", "SlumpProducao_cm", "fc28_MPa", "Massa_especifica_fresca_kg_m3")
+            ("id_Traco", "DataProducao", "SlumpProducao_cm", "fcm28_MPa", "Massa_especifica_fresca_kg_m3")
         VALUES
-            (:mix_id, :production_date, :production_slump, :fc28, :fresh_density)
+            (:mix_id, :production_date, :production_slump, :fcm28, :fresh_density)
         RETURNING "id_Concreto";
     """
 
@@ -285,7 +285,7 @@ def create_concrete_production(data):
         "mix_id": int(data.get("mix_id")),
         "production_date": _none_if_blank(data.get("production_date")),
         "production_slump": _to_decimal(data.get("production_slump")),
-        "fc28": _to_decimal(data.get("fc28")),
+        "fcm28": _to_decimal(data.get("fcm28_MPa")),
         "fresh_density": _to_decimal(data.get("fresh_density")),
     }
 

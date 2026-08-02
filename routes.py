@@ -152,7 +152,7 @@ def new_production():
             "mix_id": request.form["mix_id"],
             "production_date": request.form["production_date"],
             "production_slump": request.form["production_slump"],
-            "fc28": request.form["fc28"],
+            "fcm28": request.form["fcm28"],
             "fresh_density": request.form["fresh_density"]
         }
 
