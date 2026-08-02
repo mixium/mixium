@@ -92,7 +92,7 @@ def list_mixes():
             "Nome"              AS name,
             "TipoConcreto"      AS concrete_type,
             "Cor"               AS color,
-            "fck28_MPa"             AS fck28,
+            "fckest28_MPa"             AS fckest28,
             "SlumpAlvo_cm"         AS target_slump,
             "ConsumoCimento_kg_m3"    AS cement_consumption,
             "massaespecifica_real_kg_m3"   AS specific_mass
@@ -107,9 +107,9 @@ def create_mix(data):
 
     mix_query = text("""
         INSERT INTO "Traco"
-            ("Nome", "TipoConcreto", "Cor", "fck28_MPa", "SlumpAlvo_cm", "ConsumoCimento_kg_m3", "massaespecifica_real_kg_m3")
+            ("Nome", "TipoConcreto", "Cor", "fckest28_MPa", "SlumpAlvo_cm", "ConsumoCimento_kg_m3", "massaespecifica_real_kg_m3")
         VALUES
-            (:mix_name, :concrete_type, :color, :fck28, :target_slump, :cement_consumption, :specific_mass)
+            (:mix_name, :concrete_type, :color, :fckest28, :target_slump, :cement_consumption, :specific_mass)
         RETURNING "id_Traco";
     """)
 
@@ -117,7 +117,7 @@ def create_mix(data):
         "mix_name": _none_if_blank(data.get("mix_name")),
         "concrete_type": _none_if_blank(data.get("concrete_type")),
         "color": _none_if_blank(data.get("color")),
-        "fck28": _to_decimal(data.get("fck28")),
+        "fckest28": _to_decimal(data.get("fckest28")),
         "target_slump": _to_decimal(data.get("target_slump")),
         "cement_consumption": _to_decimal(data.get("cement_consumption")),
         "specific_mass": _to_decimal(data.get("specific_mass")),
@@ -164,7 +164,7 @@ def get_mix_with_materials(mix_id):
             "Nome"                       AS name,
             "TipoConcreto"               AS concrete_type,
             "Cor"                        AS color,
-            "fck28_MPa"                  AS fck28,
+            "fckest28_MPa"             AS fckest28,
             "SlumpAlvo_cm"              AS target_slump,
             "ConsumoCimento_kg_m3"       AS cement_consumption,
             "massaespecifica_real_kg_m3" AS specific_mass
