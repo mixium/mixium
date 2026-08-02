@@ -88,16 +88,26 @@ def get_material_types():
 def list_mixes():
     query = """
         SELECT
-            "id_Traco"          AS id,
-            "Nome"              AS name,
-            "TipoConcreto"      AS concrete_type,
-            "Cor"               AS color,
-            "fckest28_MPa"             AS fckest28,
-            "SlumpAlvo_cm"         AS target_slump,
-            "ConsumoCimento_kg_m3"    AS cement_consumption,
-            "massaespecifica_real_kg_m3"   AS specific_mass
-        FROM "Traco"
-        ORDER BY "Nome";
+            t."id_Traco"                   AS id,
+            t."Nome"                       AS name,
+            t."TipoConcreto"               AS concrete_type,
+            t."Cor"                        AS color,
+            t."fckest28_MPa"              AS fckest28,
+            t."SlumpAlvo_cm"              AS target_slump,
+            t."ConsumoCimento_kg_m3"     AS cement_consumption,
+            t."massaespecifica_real_kg_m3"    AS specific_mass,
+            COALESCE(
+                string_agg(
+                    m."NomeComercial" || ' : ' || TRIM(TRAILING '0' FROM tm."Quantidade_unitaria"::text),
+                    ' ; ' ORDER BY tm."Quantidade_unitaria" DESC
+                ),
+                'Sem composição'
+            ) AS composition
+        FROM "Traco" t
+        LEFT JOIN "TracoMaterial" tm ON tm."id_Traco" = t."id_Traco"
+        LEFT JOIN "MaterialEspecie" m ON m."id_MaterialEspecie" = tm."id_MaterialEspecie"
+        GROUP BY t."id_Traco"
+        ORDER BY t."Nome";
     """
     return execute_select_query(query)
 
@@ -152,9 +162,6 @@ def create_mix(data):
 
     return mix_id
 
-# Adicione esta função ao final do arquivo models.py
-
-# Em models.py
 
 def get_mix_with_materials(mix_id):
     # 1. Busca os dados do Traço
