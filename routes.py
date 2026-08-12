@@ -85,7 +85,6 @@ def new_mix():
 
     return render_template("tracos_form.html", form={}, materials=list_materials())
 
-import base64
 
 @app.route('/mixes/<int:mix_id>/pdf', methods=['GET', 'POST'])
 def print_mix_pdf(mix_id):
