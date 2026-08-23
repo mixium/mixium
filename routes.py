@@ -1,4 +1,3 @@
-
 from app import app
 from models import *
 import os
@@ -81,8 +80,6 @@ def new_emission_factor():
         FatorEmissaoMaterial = {
             "material_id": request.form["material_id"],
             "value": request.form["value"],
-            "unit": request.form["unit"],
-            "scope": request.form.get("scope"),
             "source": request.form.get("source"),
             "reference_year": request.form.get("reference_year"),
             "reference_standard": request.form.get("reference_standard"),
@@ -96,8 +93,7 @@ def new_emission_factor():
     return render_template(
         "fatores_emissao_form.html",
         form={},
-        materials=list_materials(),
-        scopes=get_emission_scopes()
+        materials=list_materials()
     )
 
 

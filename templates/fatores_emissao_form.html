@@ -20,23 +20,8 @@
       </div>
 
       <div class="field">
-        <label for="value">Valor do fator de emissão</label>
+        <label for="value">Valor do fator de emissão (kgCO2/kg)</label>
         <input type="number" step="any" min="0" id="value" name="value" value="{{ form.value|default('') }}" required>
-      </div>
-
-      <div class="field">
-        <label for="unit">Unidade</label>
-        <input type="text" id="unit" name="unit" value="{{ form.unit|default('') }}" placeholder="ex: kgCO2e/kg" required>
-      </div>
-
-      <div class="field">
-        <label for="scope">Escopo</label>
-        <select id="scope" name="scope">
-          <option value="">Selecione</option>
-          {% for s in scopes %}
-            <option value="{{ s }}" {% if form.scope|default('') == s %}selected{% endif %}>{{ s }}</option>
-          {% endfor %}
-        </select>
       </div>
 
       <div class="field">

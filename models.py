@@ -1,5 +1,10 @@
 from decimal import Decimal, InvalidOperation
-
+import io
+import os
+import base64
+from datetime import datetime
+from flask import render_template
+from xhtml2pdf import pisa
 from sqlalchemy import text
 from models import *
 from db_connect import (
@@ -93,7 +98,6 @@ def list_emission_factors(material_id=None, search=None):
             m."NomeComercial"        AS material_name,
             m."MarcaComercial"       AS material_brand,
             f."Valor_FatorEmissao"   AS value,
-            f."Unidade"              AS unit,
             f."Escopo"               AS scope,
             f."Fonte"                AS source,
             f."AnoReferencia"        AS reference_year,
@@ -126,7 +130,6 @@ def get_emission_factor(factor_id):
             f."id_MaterialEspecie"   AS material_id,
             m."NomeComercial"        AS material_name,
             f."Valor_FatorEmissao"   AS value,
-            f."Unidade"              AS unit,
             f."Escopo"               AS scope,
             f."Fonte"                AS source,
             f."AnoReferencia"        AS reference_year,
@@ -143,10 +146,10 @@ def get_emission_factor(factor_id):
 def create_emission_factor(data):
     query = """
         INSERT INTO "FatorEmissaoMaterial"
-            ("id_MaterialEspecie", "Valor_FatorEmissao", "Unidade", "Escopo",
+            ("id_MaterialEspecie", "Valor_FatorEmissao",
              "Fonte", "AnoReferencia", "NormaReferencia", "Observacao")
         VALUES
-            (:material_id, :value, :unit, :scope,
+            (:material_id, :value,
              :source, :reference_year, :reference_standard, :notes)
         RETURNING "id_FatorEmissao";
     """
@@ -154,8 +157,6 @@ def create_emission_factor(data):
     params = {
         "material_id": int(data.get("material_id")),
         "value": _to_decimal(data.get("value")),
-        "unit": _none_if_blank(data.get("unit")),
-        "scope": _none_if_blank(data.get("scope")),
         "source": _none_if_blank(data.get("source")),
         "reference_year": int(data.get("reference_year"))
             if _none_if_blank(data.get("reference_year")) is not None else None,
@@ -164,11 +165,6 @@ def create_emission_factor(data):
     }
 
     return execute_insert_returning_id(query, params)
-
-
-def get_emission_scopes():
-    """Lista fixa de escopos de emissão (GHG Protocol), sem depender de enum no banco."""
-    return ["Escopo 1", "Escopo 2", "Escopo 3", "Não especificado"]
 
 
 # ==========================================================
@@ -464,41 +460,10 @@ def get_specimen_diameters():
     return [row["value"] for row in rows] if rows else []
 
 
-import os
-import re
-import shutil
-import subprocess
-from datetime import datetime
-from jinja2 import Environment, FileSystemLoader
-
-# Configuração do Jinja2 para LaTeX com filtro de escape de caracteres especiais
-def _tex_escape(text):
-    if not isinstance(text, str):
-        return text
-    conv = {
-        '&': r'\&',
-        '%': r'\%',
-        '$': r'\$',
-        '#': r'\#',
-        '_': r'\_',
-        '{': r'\{',
-        '}': r'\}',
-        '~': r'\textasciitilde{}',
-        '^': r'\textascendercentered{}',
-        '\\': r'\textbackslash{}',
-    }
-    regex = re.compile('|'.join(re.escape(str(key)) for key in sorted(conv.keys(), key=lambda item: -len(item))))
-    return regex.sub(lambda match: conv[match.group()], text)
-
 # Caminho base dos templates
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates')
 
-import io
-import os
-import base64
-from datetime import datetime
-from flask import render_template
-from xhtml2pdf import pisa
+
 
 def get_image_base64(image_path):
     """Converte uma imagem local em string Base64 para o HTML do xhtml2pdf."""
@@ -510,9 +475,6 @@ def get_image_base64(image_path):
             return f"data:{mime};base64,{encoded}"
     return ""
 
-import io
-from flask import render_template
-from xhtml2pdf import pisa
 
 def generate_traco_pdf(mix_id, form_data=None, files_data=None, root_path=None):
     # Se o primeiro argumento já for o objeto mix, usamos ele, senão buscamos pelo id
