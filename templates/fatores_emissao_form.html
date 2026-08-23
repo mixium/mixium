@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Novo fator de emissão{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Cadastrar Fator de Emissão</h1>
+
+  <form method="post">
+    <div class="grid">
+      <div class="field">
+        <label for="material_id">Material</label>
+        <select id="material_id" name="material_id" required>
+          <option value="">Selecione</option>
+          {% for m in materials %}
+            <option value="{{ m.id }}" {% if form.material_id|default('')|string == m.id|string %}selected{% endif %}>
+              {{ m.commercial_name }}{% if m.brand %} — {{ m.brand }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="value">Valor do fator de emissão</label>
+        <input type="number" step="any" min="0" id="value" name="value" value="{{ form.value|default('') }}" required>
+      </div>
+
+      <div class="field">
+        <label for="unit">Unidade</label>
+        <input type="text" id="unit" name="unit" value="{{ form.unit|default('') }}" placeholder="ex: kgCO2e/kg" required>
+      </div>
+
+      <div class="field">
+        <label for="scope">Escopo</label>
+        <select id="scope" name="scope">
+          <option value="">Selecione</option>
+          {% for s in scopes %}
+            <option value="{{ s }}" {% if form.scope|default('') == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="source">Fonte</label>
+        <input type="text" id="source" name="source" value="{{ form.source|default('') }}" placeholder="ex: EPD do fabricante, ICE Database">
+      </div>
+
+      <div class="field">
+        <label for="reference_year">Ano de referência</label>
+        <input type="number" step="1" min="1900" id="reference_year" name="reference_year" value="{{ form.reference_year|default('') }}">
+      </div>
+
+      <div class="field">
+        <label for="reference_standard">Norma de referência</label>
+        <input type="text" id="reference_standard" name="reference_standard" value="{{ form.reference_standard|default('') }}" placeholder="ex: EN 15804, ISO 14067">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="notes">Observação</label>
+      <textarea id="notes" name="notes" rows="3">{{ form.notes|default('') }}</textarea>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Salvar</button>
+      <a class="btn btn-secondary" href="{{ url_for('emission_factors') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -56,6 +56,52 @@ def new_material():
 
 
 # ==========================================================
+# Emission Factors
+# ==========================================================
+
+@app.route("/emission-factors")
+def emission_factors():
+    material_id = request.args.get("material_id") or None
+    search = request.args.get("q") or None
+
+    factors = list_emission_factors(material_id=material_id, search=search)
+
+    return render_template(
+        "fatores_emissao_lista.html",
+        factors=factors,
+        materials=list_materials(),
+        selected_material=material_id,
+        search=search or ""
+    )
+
+
+@app.route("/emission-factors/new", methods=["GET", "POST"])
+def new_emission_factor():
+    if request.method == "POST":
+        FatorEmissaoMaterial = {
+            "material_id": request.form["material_id"],
+            "value": request.form["value"],
+            "unit": request.form["unit"],
+            "scope": request.form.get("scope"),
+            "source": request.form.get("source"),
+            "reference_year": request.form.get("reference_year"),
+            "reference_standard": request.form.get("reference_standard"),
+            "notes": request.form.get("notes"),
+        }
+
+        create_emission_factor(FatorEmissaoMaterial)
+        flash("Fator de emissão cadastrado com sucesso.")
+        return redirect(url_for("emission_factors"))
+
+    return render_template(
+        "fatores_emissao_form.html",
+        form={},
+        materials=list_materials(),
+        scopes=get_emission_scopes()
+    )
+
+
+# ==========================================================
 # Mixes
 # ==========================================================
 

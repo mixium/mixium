@@ -82,6 +82,96 @@ def get_material_types():
 
 
 # ==========================================================
+# Emission Factors (FatorEmissaoMaterial)
+# ==========================================================
+
+def list_emission_factors(material_id=None, search=None):
+    query = """
+        SELECT
+            f."id_FatorEmissao"      AS id,
+            f."id_MaterialEspecie"   AS material_id,
+            m."NomeComercial"        AS material_name,
+            m."MarcaComercial"       AS material_brand,
+            f."Valor_FatorEmissao"   AS value,
+            f."Unidade"              AS unit,
+            f."Escopo"               AS scope,
+            f."Fonte"                AS source,
+            f."AnoReferencia"        AS reference_year,
+            f."NormaReferencia"      AS reference_standard,
+            f."Observacao"           AS notes
+        FROM "FatorEmissaoMaterial" AS f
+        JOIN "MaterialEspecie" AS m ON m."id_MaterialEspecie" = f."id_MaterialEspecie"
+        WHERE (:material_id IS NULL OR f."id_MaterialEspecie" = :material_id)
+          AND (
+                :search IS NULL
+                OR m."NomeComercial" ILIKE :search
+                OR f."Fonte" ILIKE :search
+                OR f."NormaReferencia" ILIKE :search
+              )
+        ORDER BY m."NomeComercial", f."AnoReferencia" DESC NULLS LAST;
+    """
+
+    params = {
+        "material_id": int(material_id) if _none_if_blank(material_id) is not None else None,
+        "search": f"%{search}%" if _none_if_blank(search) else None,
+    }
+
+    return execute_select_query(query, params) or []
+
+
+def get_emission_factor(factor_id):
+    query = """
+        SELECT
+            f."id_FatorEmissao"      AS id,
+            f."id_MaterialEspecie"   AS material_id,
+            m."NomeComercial"        AS material_name,
+            f."Valor_FatorEmissao"   AS value,
+            f."Unidade"              AS unit,
+            f."Escopo"               AS scope,
+            f."Fonte"                AS source,
+            f."AnoReferencia"        AS reference_year,
+            f."NormaReferencia"      AS reference_standard,
+            f."Observacao"           AS notes
+        FROM "FatorEmissaoMaterial" AS f
+        JOIN "MaterialEspecie" AS m ON m."id_MaterialEspecie" = f."id_MaterialEspecie"
+        WHERE f."id_FatorEmissao" = :factor_id;
+    """
+    rows = execute_select_query(query, {"factor_id": factor_id})
+    return dict(rows[0]) if rows else None
+
+
+def create_emission_factor(data):
+    query = """
+        INSERT INTO "FatorEmissaoMaterial"
+            ("id_MaterialEspecie", "Valor_FatorEmissao", "Unidade", "Escopo",
+             "Fonte", "AnoReferencia", "NormaReferencia", "Observacao")
+        VALUES
+            (:material_id, :value, :unit, :scope,
+             :source, :reference_year, :reference_standard, :notes)
+        RETURNING "id_FatorEmissao";
+    """
+
+    params = {
+        "material_id": int(data.get("material_id")),
+        "value": _to_decimal(data.get("value")),
+        "unit": _none_if_blank(data.get("unit")),
+        "scope": _none_if_blank(data.get("scope")),
+        "source": _none_if_blank(data.get("source")),
+        "reference_year": int(data.get("reference_year"))
+            if _none_if_blank(data.get("reference_year")) is not None else None,
+        "reference_standard": _none_if_blank(data.get("reference_standard")),
+        "notes": _none_if_blank(data.get("notes")),
+    }
+
+    return execute_insert_returning_id(query, params)
+
+
+def get_emission_scopes():
+    """Lista fixa de escopos de emissão (GHG Protocol), sem depender de enum no banco."""
+    return ["Escopo 1", "Escopo 2", "Escopo 3", "Não especificado"]
+
+
+# ==========================================================
 # Mixes
 # ==========================================================
 

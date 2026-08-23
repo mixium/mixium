@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Fatores de Emissão{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1>Consulta de Fatores de Emissão</h1>
+
+  <form method="get" action="">
+    <div class="grid">
+      <div class="field">
+        <label for="q">Buscar</label>
+        <input type="text" id="q" name="q" value="{{ search }}" placeholder="Material, fonte ou norma">
+      </div>
+
+      <div class="field">
+        <label for="material_id">Material</label>
+        <select id="material_id" name="material_id">
+          <option value="">Todos</option>
+          {% for m in materials %}
+            <option value="{{ m.id }}" {% if selected_material|string == m.id|string %}selected{% endif %}>
+              {{ m.commercial_name }}{% if m.brand %} — {{ m.brand }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Filtrar</button>
+      <a class="btn btn-secondary" href="{{ url_for('new_emission_factor') }}">Novo fator de emissão</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Material</th>
+        <th>Valor</th>
+        <th>Unidade</th>
+        <th>Escopo</th>
+        <th>Fonte</th>
+        <th>Ano ref.</th>
+        <th>Norma</th>
+        <th>Observação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in factors %}
+      <tr>
+        <td>{{ f.material_name }}{% if f.material_brand %} — {{ f.material_brand }}{% endif %}</td>
+        <td>{{ f.value }}</td>
+        <td>{{ f.unit }}</td>
+        <td>{{ f.scope }}</td>
+        <td>{{ f.source }}</td>
+        <td>{{ f.reference_year }}</td>
+        <td>{{ f.reference_standard }}</td>
+        <td>{{ f.notes }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="8" class="muted">Nenhum fator de emissão cadastrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
