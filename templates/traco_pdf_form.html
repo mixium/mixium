@@ -2,12 +2,14 @@
 {% block title %}Gerar Carta de Traço{% endblock %}
 
 {% block content %}
-<div class="card">
-  <h1>Dados Cadastrais da Carta de Traço</h1>
-  <p><strong>Traço selecionado:</strong> {{ mix.name }} ({{ mix.concrete_type }})</p>
+<!-- Um único form envolvendo os dois cards: dados cadastrais + seleção de -->
+<!-- fatores de emissão para o Cmat, para que tudo seja enviado junto no submit. -->
+<form method="post" action="{{ url_for('print_mix_pdf', mix_id=mix.id) }}" enctype="multipart/form-data">
 
-  <!-- 1. Adicionado enctype para aceitar arquivos de imagem -->
-  <form method="post" action="{{ url_for('print_mix_pdf', mix_id=mix.id) }}" enctype="multipart/form-data">
+  <div class="card">
+    <h1>Dados Cadastrais da Carta de Traço</h1>
+    <p><strong>Traço selecionado:</strong> {{ mix.name }} ({{ mix.concrete_type }})</p>
+
     <div class="grid">
       <div class="field">
         <label for="company">Empresa</label>
@@ -29,20 +31,66 @@
         <input type="date" id="doc_date" name="doc_date" required>
       </div>
 
-      <!-- 2. NOVO CAMPO: Upload opcional de Logo -->
       <div class="field">
         <label for="logo">Logotipo da Empresa (Opcional - PNG/JPG)</label>
         <input type="file" id="logo" name="logo" accept="image/png, image/jpeg">
         <small class="muted">Se não enviar nada, o cabeçalho ficará em branco sem imagem.</small>
       </div>
     </div>
+  </div>
 
-    <div class="actions" style="margin-top: 20px;">
-      <button class="btn btn-primary" type="submit">Gerar PDF</button>
-      <a class="btn btn-secondary" href="{{ url_for('mixes') }}">Cancelar</a>
-    </div>
-  </form>
-</div>
+  <div class="card">
+    <h1>ACV Parcial (Cmat) — Fatores de Emissão por Material</h1>
+    <p class="muted">
+      Escolha, para cada material, o fator de emissão a ser usado no cálculo do cenário
+      máximo e do cenário mínimo de emissão de 1 m³ de concreto. Materiais sem fator
+      selecionado não entram na soma do Cmat.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Fator Máximo</th>
+          <th>Fator Mínimo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mat in mix.materials %}
+        <tr>
+          <td>{{ mat.commercial_name }}{% if mat.brand %} — {{ mat.brand }}{% endif %}</td>
+          {% set factors = factors_by_material.get(mat.material_id, []) %}
+          {% if factors %}
+            <td>
+              <select name="factor_max_{{ mat.material_id }}">
+                <option value="">Sem fator</option>
+                {% for f in factors %}
+                  <option value="{{ f.id }}">{{ f.value }} kgCO2/kg{% if f.source %} — {{ f.source }}{% endif %}{% if f.reference_year %} ({{ f.reference_year }}){% endif %}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select name="factor_min_{{ mat.material_id }}">
+                <option value="">Sem fator</option>
+                {% for f in factors %}
+                  <option value="{{ f.id }}">{{ f.value }} kgCO2/kg{% if f.source %} — {{ f.source }}{% endif %}{% if f.reference_year %} ({{ f.reference_year }}){% endif %}</option>
+                {% endfor %}
+              </select>
+            </td>
+          {% else %}
+            <td colspan="2" class="muted">Nenhum fator de emissão cadastrado para este material</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="actions" style="margin-top: 20px;">
+    <button class="btn btn-primary" type="submit">Gerar PDF</button>
+    <a class="btn btn-secondary" href="{{ url_for('mixes') }}">Cancelar</a>
+  </div>
+</form>
 
 <script>
   // Preenche a data de hoje por padrão

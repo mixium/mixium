@@ -1,10 +1,5 @@
 from decimal import Decimal, InvalidOperation
-import io
-import os
-import base64
-from datetime import datetime
-from flask import render_template
-from xhtml2pdf import pisa
+
 from sqlalchemy import text
 from models import *
 from db_connect import (
@@ -167,6 +162,66 @@ def create_emission_factor(data):
     return execute_insert_returning_id(query, params)
 
 
+def calculate_cmat(materials, factor_selection=None):
+    """
+    Calcula a ACV parcial "Cmat" (kgCO2/m3 de concreto), conforme o boletim
+    técnico do IBRACON, a partir do consumo de cada material do traço
+    (kg/m3) e dos fatores de emissão máximo e mínimo escolhidos para cada
+    material.
+
+    materials: lista de materiais do traço (com "material_id", "commercial_name"
+        e "consumption", no formato retornado por get_mix_with_materials).
+    factor_selection: dict {material_id: {"factor_max_id": id ou None,
+        "factor_min_id": id ou None}}.
+
+    Retorna um dict com as linhas da tabela e os totais (Cmat máximo e mínimo).
+    Materiais sem fator escolhido entram na tabela com emissão "-" e não
+    somam nos totais.
+    """
+    factor_selection = factor_selection or {}
+    rows = []
+    total_max = 0.0
+    total_min = 0.0
+
+    for mat in materials:
+        material_id = mat.get("material_id")
+        consumption = float(mat.get("consumption") or 0)
+        selection = factor_selection.get(material_id) or {}
+
+        factor_max_id = _none_if_blank(selection.get("factor_max_id"))
+        factor_min_id = _none_if_blank(selection.get("factor_min_id"))
+
+        factor_max = get_emission_factor(int(factor_max_id)) if factor_max_id is not None else None
+        factor_min = get_emission_factor(int(factor_min_id)) if factor_min_id is not None else None
+
+        factor_max_value = float(factor_max["value"]) if factor_max and factor_max.get("value") is not None else None
+        factor_min_value = float(factor_min["value"]) if factor_min and factor_min.get("value") is not None else None
+
+        emission_max = consumption * factor_max_value if factor_max_value is not None else None
+        emission_min = consumption * factor_min_value if factor_min_value is not None else None
+
+        if emission_max is not None:
+            total_max += emission_max
+        if emission_min is not None:
+            total_min += emission_min
+
+        rows.append({
+            "material_id": material_id,
+            "material_name": mat.get("commercial_name"),
+            "consumption": round(consumption, 2),
+            "factor_max": round(factor_max_value, 6) if factor_max_value is not None else None,
+            "factor_min": round(factor_min_value, 6) if factor_min_value is not None else None,
+            "emission_max": round(emission_max, 3) if emission_max is not None else None,
+            "emission_min": round(emission_min, 3) if emission_min is not None else None,
+        })
+
+    return {
+        "rows": rows,
+        "total_max": round(total_max, 3),
+        "total_min": round(total_min, 3),
+    }
+
+
 # ==========================================================
 # Mixes
 # ==========================================================
@@ -275,6 +330,7 @@ def get_mix_with_materials(mix_id):
     # 2. Busca Materiais
     materials_query = """
         SELECT
+            m."id_MaterialEspecie"       AS material_id,
             m."NomeComercial"            AS commercial_name,
             m."MarcaComercial"           AS brand,
             m.tipo_material              AS material_type,
@@ -460,10 +516,12 @@ def get_specimen_diameters():
     return [row["value"] for row in rows] if rows else []
 
 
-# Caminho base dos templates
-TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates')
-
-
+import io
+import os
+import base64
+from datetime import datetime
+from flask import render_template
+from xhtml2pdf import pisa
 
 def get_image_base64(image_path):
     """Converte uma imagem local em string Base64 para o HTML do xhtml2pdf."""
@@ -475,8 +533,11 @@ def get_image_base64(image_path):
             return f"data:{mime};base64,{encoded}"
     return ""
 
+import io
+from flask import render_template
+from xhtml2pdf import pisa
 
-def generate_traco_pdf(mix_id, form_data=None, files_data=None, root_path=None):
+def generate_traco_pdf(mix_id, form_data=None, factor_selection=None, files_data=None, root_path=None):
     # Se o primeiro argumento já for o objeto mix, usamos ele, senão buscamos pelo id
     if isinstance(mix_id, dict):
         mix = mix_id
@@ -487,6 +548,10 @@ def generate_traco_pdf(mix_id, form_data=None, files_data=None, root_path=None):
         return None, "Traço não encontrado."
 
     form_data = form_data or {}
+
+    # ACV parcial "Cmat" (boletim técnico IBRACON): emissões máxima e mínima
+    # de 1 m³ de concreto, a partir dos fatores de emissão escolhidos por material.
+    mix["cmat"] = calculate_cmat(mix.get("materials", []), factor_selection)
 
     # O dicionário 'header' é enviado para o Jinja2 no template HTML do PDF
     header_data = {

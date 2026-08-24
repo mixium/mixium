@@ -161,5 +161,37 @@
         </tbody>
     </table>
 
+    <!-- Tabela 3: ACV Parcial Cmat -->
+    <div class="caption" style="margin-top: 15px;">ACV Parcial (Cmat) — Boletim Técnico IBRACON</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 26%;">Material</th>
+                <th style="width: 15%;">Consumo (kg/m³)</th>
+                <th style="width: 17%;">Fator Máximo (kgCO2/kg)</th>
+                <th style="width: 17%;">Fator Mínimo (kgCO2/kg)</th>
+                <th style="width: 12.5%;">Emissão Máx. (kgCO2/m³)</th>
+                <th style="width: 12.5%;">Emissão Mín. (kgCO2/m³)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in mix.cmat.rows %}
+            <tr>
+                <td style="text-align: left;">{{ row.material_name or '-' }}</td>
+                <td>{{ row.consumption if row.consumption is not none else '-' }}</td>
+                <td>{{ row.factor_max if row.factor_max is not none else '-' }}</td>
+                <td>{{ row.factor_min if row.factor_min is not none else '-' }}</td>
+                <td>{{ row.emission_max if row.emission_max is not none else '-' }}</td>
+                <td>{{ row.emission_min if row.emission_min is not none else '-' }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="4" style="text-align: right; font-weight: bold;">Cmat (total para 1 m³ de concreto)</td>
+                <td style="font-weight: bold;">{{ mix.cmat.total_max }}</td>
+                <td style="font-weight: bold;">{{ mix.cmat.total_min }}</td>
+            </tr>
+        </tbody>
+    </table>
+
 </body>
 </html>

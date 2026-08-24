@@ -137,7 +137,11 @@ def print_mix_pdf(mix_id):
 
     # GET: Abre o formulário traco_pdf_form.html
     if request.method == 'GET':
-        return render_template('traco_pdf_form.html', mix=mix)
+        factors_by_material = {
+            mat["material_id"]: list_emission_factors(material_id=mat["material_id"])
+            for mat in mix.get("materials", [])
+        }
+        return render_template('traco_pdf_form.html', mix=mix, factors_by_material=factors_by_material)
 
     # POST: Lê o arquivo 'logo' do formulário
     logo_file = request.files.get('logo')
@@ -158,7 +162,17 @@ def print_mix_pdf(mix_id):
         "logo_base64": logo_base64
     }
 
-    pdf_buffer, error = generate_traco_pdf(mix, form_data=form_payload)
+    # Fator de emissão máximo e mínimo escolhidos pelo usuário para cada material,
+    # usados no cálculo da ACV parcial "Cmat" (boletim técnico IBRACON).
+    factor_selection = {}
+    for mat in mix.get("materials", []):
+        material_id = mat["material_id"]
+        factor_selection[material_id] = {
+            "factor_max_id": request.form.get(f"factor_max_{material_id}") or None,
+            "factor_min_id": request.form.get(f"factor_min_{material_id}") or None,
+        }
+
+    pdf_buffer, error = generate_traco_pdf(mix, form_data=form_payload, factor_selection=factor_selection)
 
     if error:
         flash(f"Erro ao gerar PDF: {error}", "danger")
