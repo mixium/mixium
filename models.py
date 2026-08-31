@@ -508,6 +508,80 @@ def create_strength_sample(data):
     return execute_insert_returning_id(query, params)
 
 
+def get_strength_sample(sample_id):
+    query = """
+        SELECT
+            s."id_ConcretoAmostraResistencia"  AS id,
+            s."id_Concreto"                    AS production_id,
+            s."numero_corpodeprova"            AS specimen_number,
+            s."DataRompimento"                 AS test_date,
+            s."Idade_dias"                     AS age_days,
+            s."resistencia_compressao_mpa"     AS compressive_strength,
+            s."tipo_cura"                      AS curing_type,
+            s."diametro_corpodeprova_cm"      AS specimen_diameter,
+            s."massa_corpodeprova_g"          AS specimen_mass
+        FROM "ConcretoAmostraResistencia" s
+        WHERE s."id_ConcretoAmostraResistencia" = :id;
+    """
+    rows = execute_select_query(query, {"id": sample_id})
+    return dict(rows[0]) if rows else None
+
+
+def update_strength_sample(sample_id, data):
+    query = """
+        UPDATE "ConcretoAmostraResistencia"
+        SET
+            "numero_corpodeprova" = :specimen_number,
+            "DataRompimento" = :test_date,
+            "Idade_dias" = :age_days,
+            "resistencia_compressao_mpa" = :compressive_strength,
+            "tipo_cura" = :curing_type,
+            "diametro_corpodeprova_cm" = :specimen_diameter,
+            "massa_corpodeprova_g" = :specimen_mass
+        WHERE "id_ConcretoAmostraResistencia" = :id;
+    """
+
+    params = {
+        "id": int(sample_id),
+        "specimen_number": _none_if_blank(data.get("specimen_number")),
+        "test_date": _none_if_blank(data.get("test_date")),
+        "age_days": int(data.get("age_days")) if _none_if_blank(data.get("age_days")) is not None else None,
+        "compressive_strength": _to_decimal(data.get("compressive_strength")),
+        "curing_type": data.get("curing_type") or None,
+        "specimen_diameter": _none_if_blank(data.get("specimen_diameter")),
+        "specimen_mass": _to_decimal(data.get("specimen_mass")),
+    }
+
+    return execute_modify_query(query, params)
+
+
+# Generic delete helpers for main entities
+def delete_material(material_id):
+    query = 'DELETE FROM "MaterialEspecie" WHERE "id_MaterialEspecie" = :id;'
+    return execute_modify_query(query, {"id": int(material_id)})
+
+
+def delete_emission_factor(factor_id):
+    query = 'DELETE FROM "FatorEmissaoMaterial" WHERE "id_FatorEmissao" = :id;'
+    return execute_modify_query(query, {"id": int(factor_id)})
+
+
+def delete_mix(mix_id):
+    # Try removing the trace; DB foreign keys should take care of children if configured.
+    query = 'DELETE FROM "Traco" WHERE "id_Traco" = :id;'
+    return execute_modify_query(query, {"id": int(mix_id)})
+
+
+def delete_concrete_production(production_id):
+    query = 'DELETE FROM "ProducaoConcreto" WHERE "id_Concreto" = :id;'
+    return execute_modify_query(query, {"id": int(production_id)})
+
+
+def delete_strength_sample(sample_id):
+    query = 'DELETE FROM "ConcretoAmostraResistencia" WHERE "id_ConcretoAmostraResistencia" = :id;'
+    return execute_modify_query(query, {"id": int(sample_id)})
+
+
 def get_specimen_diameters():
     query = """
         SELECT unnest(enum_range(NULL::"enum_diametro_corpodeprova_cm")) AS value;

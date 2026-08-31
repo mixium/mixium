@@ -262,3 +262,70 @@ def new_strength_sample():
         productions=list_concrete_productions(),
         diameters=get_specimen_diameters()
     )
+
+
+@app.route('/strength-samples/<int:sample_id>/edit', methods=['GET', 'POST'])
+def edit_strength_sample(sample_id):
+    sample = get_strength_sample(sample_id)
+    if not sample:
+        flash("Corpo de prova não encontrado.", "danger")
+        return redirect(url_for('strength_samples'))
+
+    if request.method == 'POST':
+        payload = {
+            'specimen_number': request.form.get('specimen_number'),
+            'test_date': request.form.get('test_date'),
+            'age_days': request.form.get('age_days'),
+            'compressive_strength': request.form.get('compressive_strength'),
+            'curing_type': request.form.get('curing_type'),
+            'specimen_diameter': request.form.get('specimen_diameter'),
+            'specimen_mass': request.form.get('specimen_mass'),
+        }
+
+        update_strength_sample(sample_id, payload)
+        flash('Corpo de prova atualizado com sucesso.')
+        return redirect(url_for('strength_samples'))
+
+    # GET: renderiza formulário com dados existentes
+    return render_template(
+        'amostras_form.html',
+        form=sample,
+        productions=list_concrete_productions(),
+        diameters=get_specimen_diameters()
+    )
+
+
+# ------------------ Delete endpoints for main entities ------------------
+@app.route('/materials/<int:material_id>/delete', methods=['POST'])
+def delete_material_route(material_id):
+    delete_material(material_id)
+    flash('Material excluído.')
+    return redirect(url_for('materials'))
+
+
+@app.route('/emission-factors/<int:factor_id>/delete', methods=['POST'])
+def delete_emission_factor_route(factor_id):
+    delete_emission_factor(factor_id)
+    flash('Fator de emissão excluído.')
+    return redirect(url_for('emission_factors'))
+
+
+@app.route('/mixes/<int:mix_id>/delete', methods=['POST'])
+def delete_mix_route(mix_id):
+    delete_mix(mix_id)
+    flash('Traço excluído.')
+    return redirect(url_for('mixes'))
+
+
+@app.route('/productions/<int:production_id>/delete', methods=['POST'])
+def delete_production_route(production_id):
+    delete_concrete_production(production_id)
+    flash('Produção excluída.')
+    return redirect(url_for('productions'))
+
+
+@app.route('/strength-samples/<int:sample_id>/delete', methods=['POST'])
+def delete_strength_sample_route(sample_id):
+    delete_strength_sample(sample_id)
+    flash('Corpo de prova excluído.')
+    return redirect(url_for('strength_samples'))

@@ -44,6 +44,7 @@
         <th>Ano ref.</th>
         <th>Norma</th>
         <th>Observação</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -57,6 +58,11 @@
         <td>{{ f.reference_year }}</td>
         <td>{{ f.reference_standard }}</td>
         <td>{{ f.notes }}</td>
+        <td>
+          <form method="post" action="{{ url_for('delete_emission_factor_route', factor_id=f.id) }}" style="display:inline" onsubmit="return confirm('Excluir esse fator de emissão?');">
+            <button class="btn btn-danger" type="submit">Excluir</button>
+          </form>
+        </td>
       </tr>
       {% else %}
       <tr>

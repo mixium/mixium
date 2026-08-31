@@ -28,6 +28,7 @@
             <th>Slump (cm)</th>
             <th>fcm28 (MPa)</th>
             <th>Massa específica (kg/m³)</th>
+            <th>Ações</th>
         </tr>
 
     </thead>
@@ -47,6 +48,11 @@
             <td>{{ production.fcm28 }}</td>
 
             <td>{{ production.fresh_density }}</td>
+            <td>
+                <form method="post" action="{{ url_for('delete_production_route', production_id=production.id) }}" style="display:inline" onsubmit="return confirm('Excluir essa produção?');">
+                    <button class="btn btn-danger" type="submit">Excluir</button>
+                </form>
+            </td>
 
         </tr>
 

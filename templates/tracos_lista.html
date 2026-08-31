@@ -47,10 +47,10 @@
         <td>{{ m.specific_mass }}</td>
         <td>{{ m.composition }}</td>
         <td>
-          <!-- 2. BOTÃO ADICIONADO AQUI -->
-          <a class="btn btn-secondary" href="{{ url_for('print_mix_pdf', mix_id=m.id) }}">
-            Imprimir PDF
-          </a>
+          <a class="btn btn-secondary" href="{{ url_for('print_mix_pdf', mix_id=m.id) }}">Imprimir PDF</a>
+          <form method="post" action="{{ url_for('delete_mix_route', mix_id=m.id) }}" style="display:inline" onsubmit="return confirm('Excluir esse traço?');">
+            <button class="btn btn-danger" type="submit">Excluir</button>
+          </form>
         </td>
       </tr>
       {% else %}

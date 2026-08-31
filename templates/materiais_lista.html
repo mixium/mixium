@@ -38,6 +38,7 @@
         <th>Marca</th>
         <th>Massa específica</th>
         <th>Tipo</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody>
@@ -47,6 +48,11 @@
         <td>{{ m.brand }}</td>
         <td>{{ m.specific_mass }}</td>
         <td>{{ m.material_type }}</td>
+        <td>
+          <form method="post" action="{{ url_for('delete_material_route', material_id=m.id) }}" style="display:inline" onsubmit="return confirm('Excluir esse material?');">
+            <button class="btn btn-danger" type="submit">Excluir</button>
+          </form>
+        </td>
       </tr>
       {% else %}
       <tr>
